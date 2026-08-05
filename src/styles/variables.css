@@ -1,0 +1,77 @@
+:root {
+  /* Brand */
+  --jd-primary: #004639;
+  --jd-on-primary: #ffffff;
+  --jd-primary-container: #1b5e4f;
+  --jd-on-primary-container: #95d5c2;
+  --jd-primary-fixed: #aff0dc;
+  --jd-on-primary-fixed: #002019;
+  --jd-primary-fixed-dim: #93d3c0;
+  --jd-on-primary-fixed-variant: #055142;
+  --jd-inverse-primary: #93d3c0;
+
+  --jd-secondary: #7c5800;
+  --jd-on-secondary: #ffffff;
+  --jd-secondary-container: #fdbf40;
+  --jd-on-secondary-container: #6f4e00;
+  --jd-secondary-fixed: #ffdea8;
+  --jd-on-secondary-fixed: #271900;
+  --jd-secondary-fixed-dim: #fabc3e;
+  --jd-on-secondary-fixed-variant: #5e4200;
+
+  --jd-tertiary: #722000;
+  --jd-on-tertiary: #ffffff;
+  --jd-tertiary-container: #933510;
+  --jd-on-tertiary-container: #ffb7a0;
+  --jd-tertiary-fixed: #ffdbd0;
+  --jd-on-tertiary-fixed: #390c00;
+  --jd-tertiary-fixed-dim: #ffb59d;
+  --jd-on-tertiary-fixed-variant: #822803;
+
+  --jd-error: #ba1a1a;
+  --jd-on-error: #ffffff;
+  --jd-error-container: #ffdad6;
+  --jd-on-error-container: #93000a;
+
+  /* Neutral surfaces */
+  --jd-background: #fff9eb;
+  --jd-on-background: #1e1c10;
+  --jd-surface: #fff9eb;
+  --jd-on-surface: #1e1c10;
+  --jd-surface-dim: #e0dac7;
+  --jd-surface-bright: #fff9eb;
+  --jd-surface-container-lowest: #ffffff;
+  --jd-surface-container-low: #faf3e0;
+  --jd-surface-container: #f4eedb;
+  --jd-surface-container-high: #efe8d5;
+  --jd-surface-container-highest: #e9e2d0;
+  --jd-surface-variant: #e9e2d0;
+  --jd-on-surface-variant: #3f4945;
+  --jd-outline: #707975;
+  --jd-outline-variant: #bfc9c4;
+  --jd-inverse-surface: #333024;
+  --jd-inverse-on-surface: #f7f0de;
+  --jd-surface-tint: #286959;
+  --jd-coral: #e8734a;
+
+  /* Elevation */
+  --jd-shadow-1: 0px 4px 12px rgba(27, 94, 79, 0.08);
+  --jd-shadow-2: 0px 8px 24px rgba(27, 94, 79, 0.12);
+  --jd-shadow-3: 0px 12px 32px rgba(27, 94, 79, 0.16);
+}
+
+.dark {
+  --jd-background: #14150d;
+  --jd-on-background: #e8e2d0;
+  --jd-surface: #1e1c10;
+  --jd-on-surface: #e8e2d0;
+  --jd-surface-bright: #3a3a2d;
+  --jd-surface-dim: #26251a;
+  --jd-primary: #93d3c0;
+  --jd-on-primary: #00382d;
+  --jd-primary-container: #1b5e4f;
+  --jd-on-primary-container: #aff0dc;
+  --jd-secondary: #fabc3e;
+  --jd-secondary-container: #5e4200;
+  --jd-on-secondary-container: #ffdea8;
+}

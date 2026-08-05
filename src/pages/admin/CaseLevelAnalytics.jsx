@@ -1,0 +1,114 @@
+import DashboardLayout from '../../components/layout/DashboardLayout';
+import Card from '../../components/common/Card';
+import Badge from '../../components/common/Badge';
+import KPIWidget from '../../components/charts/KPIWidget';
+import BarChart from '../../components/charts/BarChart';
+import HeatMap from '../../components/charts/HeatMap';
+
+const SIDEBAR = {
+  items: [
+    { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
+    { label: 'Disease Surveillance', to: '/admin/surveillance', icon: 'public_health' },
+    { label: 'Case-Level Analytics', to: '/admin/case-analytics', icon: 'analytics' },
+    { label: 'Audit Log', to: '/admin/audit-log', icon: 'verified_user' },
+    { label: 'Report Generation', to: '/admin/reports', icon: 'summarize' },
+    { label: 'Doctor Management', to: '/admin/doctors', icon: 'medical_services' },
+    { label: 'CHW Management', to: '/admin/chws', icon: 'volunteer_activism' },
+    { label: 'Configuration', to: '/admin/settings', icon: 'settings' },
+  ],
+};
+
+const RISK_ROWS = [
+  { label: 'Meera Sharma', values: [2, 4, 4, 4, 4, 3, 4] },
+  { label: 'Gopal Prasad', values: [1, 2, 4, 4, 3, 2, 2] },
+  { label: 'Rajesh Kumar', values: [0, 1, 2, 2, 3, 2, 1] },
+  { label: 'Arjun Singh', values: [1, 1, 2, 1, 0, 1, 1] },
+];
+
+export default function CaseLevelAnalytics() {
+  return (
+    <DashboardLayout
+      sidebarProps={SIDEBAR}
+      headerProps={{ title: 'Case-Level Analytics', subtitle: 'Deep dive into individual case outcomes' }}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <KPIWidget label="Total Cases" value="2,410" icon="description" color="primary" trend={9} />
+        <KPIWidget label="Resolved" value="1,940" icon="verified" color="secondary" trend={12} />
+        <KPIWidget label="Escalated" value="320" icon="north_east" color="tertiary" trend={-5} />
+        <KPIWidget label="In Follow-up" value="150" icon="schedule" color="error" trend={3} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card title="Cases by Diagnosis" subtitle="Top conditions" className="lg:col-span-2">
+          <BarChart
+            labels={['Malaria', 'Fever', 'Prenatal', 'Chronic', 'Respiratory', 'Other']}
+            data={[540, 480, 390, 350, 260, 390]}
+            colors={['#1B5E4F', '#00639B', '#7C5800', '#722000', '#E8734A', '#C8B900']}
+            height={300}
+          />
+        </Card>
+        <Card title="Case Outcome Flow" subtitle="Escalation funnel">
+          <div className="space-y-4">
+            {[
+              { label: 'Resolved at PHC', value: 81, color: 'bg-primary' },
+              { label: 'Referred to CHC', value: 13, color: 'bg-tertiary' },
+              { label: 'Hospitalized', value: 6, color: 'bg-error' },
+            ].map((r) => (
+              <div key={r.label}>
+                <div className="flex justify-between text-label-md mb-1">
+                  <span className="text-on-surface-variant">{r.label}</span>
+                  <span className="font-bold text-on-surface">{r.value}%</span>
+                </div>
+                <div className="h-3 rounded-full bg-surface-container-high overflow-hidden">
+                  <div className={`h-full ${r.color} rounded-full`} style={{ width: `${r.value}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      <Card title="Risk Evolution Heatmap" subtitle="Patient risk intensity over the past week">
+        <HeatMap rows={RISK_ROWS} weekLabels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']} />
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <Card title="Time-to-Treatment" subtitle="Median minutes">
+          <div className="text-center py-8">
+            <p className="font-headline text-headline-2xl font-bold text-primary">38 min</p>
+            <p className="text-on-surface-variant text-label-md mt-1">Down 12% vs last month</p>
+          </div>
+        </Card>
+        <Card title="Recovery Rate" subtitle="By risk group">
+          <div className="space-y-3 mt-2">
+            {[
+              { label: 'Low', value: 98 },
+              { label: 'Moderate', value: 91 },
+              { label: 'High', value: 78 },
+              { label: 'Critical', value: 62 },
+            ].map((r) => (
+              <div key={r.label} className="flex items-center gap-3">
+                <span className="w-20 text-label-md text-on-surface-variant">{r.label}</span>
+                <div className="flex-1 h-2.5 rounded-full bg-surface-container-high overflow-hidden">
+                  <div className="h-full bg-primary rounded-full" style={{ width: `${r.value}%` }} />
+                </div>
+                <span className="font-bold text-on-surface text-label-md">{r.value}%</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card title="Critical Cases" subtitle="Active high-risk patients">
+          <div className="space-y-3">
+            {['JD-9921', 'JD-1209', 'JD-1023'].map((id) => (
+              <div key={id} className="flex items-center justify-between bg-surface-container-low rounded-lg p-3">
+                <span className="font-mono font-semibold text-primary">{id}</span>
+                <Badge variant="critical">Critical</Badge>
+              </div>
+            ))}
+            <p className="text-label-sm text-on-surface-variant">3 critical cases flagged for priority review.</p>
+          </div>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+}
