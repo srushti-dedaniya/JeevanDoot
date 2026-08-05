@@ -16,7 +16,7 @@ export default function Unauthorized() {
           You do not have permission to access this portal. Please sign in with an authorised account.
         </p>
         <div className="flex gap-3 justify-center">
-          <Button icon="login" size="lg" onClick={() => navigate('/')}>
+          <Button icon="login" size="lg" onClick={() => navigate('/doctor/login')}>
             Go to Login
           </Button>
           <Button variant="outline" size="lg" onClick={() => navigate(-1)}>

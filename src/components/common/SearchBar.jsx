@@ -13,7 +13,7 @@ const SearchBar = forwardRef(
         placeholder={placeholder}
         onChange={(e) => onSearch?.(e.target.value)}
         className={cx(
-          'w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:ring-2 focus:ring-primary focus:border-transparent outline-none',
+          'w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md text-on-surface caret-on-surface placeholder:text-outline/70 focus:ring-2 focus:ring-primary focus:border-transparent outline-none',
           className
         )}
         {...props}

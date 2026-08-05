@@ -38,7 +38,7 @@ const Input = forwardRef(
         <input
           ref={ref}
           className={cx(
-            'w-full h-14 bg-surface-container-low border border-outline-variant rounded-lg custom-input text-body-md focus:outline-none placeholder:text-outline/60',
+            'w-full h-14 bg-surface-container-low border border-outline-variant rounded-lg custom-input text-body-md text-on-surface caret-on-surface focus:outline-none placeholder:text-outline/70',
             icon && iconPosition === 'left' && 'pl-12',
             (icon && iconPosition === 'right') || rightAdornment ? 'pr-12' : '',
             !icon && !rightAdornment && 'px-4',

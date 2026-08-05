@@ -5,12 +5,65 @@ export const ROLES = {
   ADMIN: 'admin',
   DOCTOR: 'doctor',
   CHW: 'chw',
+  PATIENT: 'patient',
+  NGO: 'ngo',
+  GOVERNMENT: 'government',
 };
 
 export const ROLE_LABELS = {
   admin: 'Admin',
   doctor: 'Doctor',
   chw: 'Health Worker',
+  patient: 'Patient',
+  ngo: 'NGO',
+  government: 'Government',
+};
+
+export const ROLE_META = {
+  doctor: {
+    label: 'Doctor',
+    icon: 'stethoscope',
+    description: 'Consultations, prescriptions & referrals',
+    color: 'bg-primary-fixed text-on-primary-fixed-variant',
+  },
+  patient: {
+    label: 'Patient',
+    icon: 'personal_injury',
+    description: 'Appointments & health records',
+    color: 'bg-secondary-container text-on-secondary-container',
+  },
+  ngo: {
+    label: 'NGO',
+    icon: 'volunteer_activism',
+    description: 'Camps & community outreach',
+    color: 'bg-tertiary-fixed-dim text-tertiary',
+  },
+  government: {
+    label: 'Government',
+    icon: 'account_balance',
+    description: 'Surveillance & public policy',
+    color: 'bg-primary-fixed text-on-primary-fixed-variant',
+  },
+  chw: {
+    label: 'Health Worker',
+    icon: 'home_work',
+    description: 'Household care & surveys',
+    color: 'bg-secondary-container text-on-secondary-container',
+  },
+  admin: {
+    label: 'Admin',
+    icon: 'admin_panel_settings',
+    description: 'Platform administration',
+    color: 'bg-error-container text-on-error-container',
+  },
+};
+
+export const REGISTRATION_ROLES = ['doctor', 'patient', 'ngo', 'government'];
+
+export const ROLE_PORTAL = {
+  admin: '/admin/dashboard',
+  doctor: '/doctor/dashboard',
+  chw: '/chw/dashboard',
 };
 
 export const RISK_LEVELS = {

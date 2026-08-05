@@ -40,9 +40,9 @@ npm run dev
 
 The app opens automatically at **http://localhost:5173** (if it doesn't, visit the URL Vite prints in the terminal).
 
-### 3. Log in
+### 3. Explore & log in
 
-The root URL redirects to the Doctor login. Use one of the demo accounts (any password of 8+ characters works — login is mocked):
+The root URL (`/`) shows a public **Home page** with a **Register** page (choose a role: Doctor, Patient, NGO or Government) and a **Sign In** flow. Clicking **Sign In** opens a role picker (`/login`) for Patient, Doctor, NGO and Government. Use one of the demo accounts (any password works — login is mocked):
 
 | Role               | Email                     |
 | ------------------ | ------------------------- |

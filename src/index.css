@@ -35,6 +35,12 @@
     direction: ltr;
     vertical-align: middle;
   }
+
+  input,
+  select,
+  textarea {
+    color: var(--jd-on-surface);
+  }
 }
 
 @layer components {

@@ -6,6 +6,9 @@ const MOCK_CREDENTIALS = {
   admin: { role: 'admin', name: 'Admin Miller', email: 'admin@jeevandoot.org' },
   doctor: { role: 'doctor', name: 'Dr. Sharma', email: 'doctor@jeevandoot.org' },
   chw: { role: 'chw', name: 'Priya Sharma', email: 'chw@jeevandoot.org' },
+  patient: { role: 'patient', name: 'Patient', email: 'patient@jeevandoot.org' },
+  ngo: { role: 'ngo', name: 'NGO Member', email: 'ngo@jeevandoot.org' },
+  government: { role: 'government', name: 'Government Official', email: 'govt@jeevandoot.org' },
 };
 
 export const AuthProvider = ({ children }) => {
@@ -38,9 +41,24 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('jd_user');
   }, []);
 
+  const register = useCallback(async (profile) => {
+    await new Promise((resolve) => setTimeout(resolve, 1200));
+    const authedUser = {
+      id: `usr-${Date.now()}`,
+      name: profile.name,
+      email: profile.email,
+      role: profile.role,
+      token: `mock-token-${profile.role}-${Date.now()}`,
+      loggedInAt: new Date().toISOString(),
+    };
+    setUser(authedUser);
+    localStorage.setItem('jd_user', JSON.stringify(authedUser));
+    return authedUser;
+  }, []);
+
   const value = useMemo(
-    () => ({ user, isAuthenticated: Boolean(user), login, logout }),
-    [user, login, logout]
+    () => ({ user, isAuthenticated: Boolean(user), login, register, logout }),
+    [user, login, register, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
