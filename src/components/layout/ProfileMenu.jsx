@@ -11,12 +11,40 @@ import { useAuth } from '../../hooks/useAuth';
 import { useClickOutside } from '../../hooks/useClickOutside';
 
 const DOCTOR_PROFILE = {
-  doctorId: 'DR-1024',
-  specialization: 'General Physician',
+  workerId: 'DR-1024',
+  designation: 'General Physician',
   phone: '+91 98765 43210',
-  hospital: 'Amroli Primary Health Centre',
+  organization: 'Amroli Primary Health Centre',
   experience: '12 years',
-  availability: 'Available',
+  fields: [
+    { icon: 'badge', labelKey: 'doctorId', valueKey: 'workerId' },
+    { icon: 'work', labelKey: 'specialization', valueKey: 'designation' },
+    { icon: 'mail', labelKey: 'email', fromUser: 'email' },
+    { icon: 'call', labelKey: 'phoneNumber', valueKey: 'phone' },
+    { icon: 'local_hospital', labelKey: 'hospital', valueKey: 'organization' },
+    { icon: 'school', labelKey: 'experience', valueKey: 'experience' },
+  ],
+};
+
+const NGO_PROFILE = {
+  workerId: 'NGO-2047',
+  designation: 'Community Outreach Coordinator',
+  phone: '+91 98765 12340',
+  organization: 'Seva Samiti Foundation',
+  experience: '6 years',
+  region: 'Dhamtari & Bijapur Blocks',
+  fields: [
+    { icon: 'badge', labelKey: 'workerId', valueKey: 'workerId' },
+    { icon: 'work', labelKey: 'designation', valueKey: 'designation' },
+    { icon: 'mail', labelKey: 'email', fromUser: 'email' },
+    { icon: 'call', labelKey: 'phoneNumber', valueKey: 'phone' },
+    { icon: 'volunteer_activism', labelKey: 'organization', valueKey: 'organization' },
+    { icon: 'location_on', labelKey: 'region', valueKey: 'region' },
+  ],
+};
+
+const PROFILE_BY_ROLE = {
+  ngo: NGO_PROFILE,
 };
 
 const FAQS = [
@@ -50,6 +78,7 @@ export default function ProfileMenu() {
   const { user, logout } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const profile = PROFILE_BY_ROLE[user?.role] ?? DOCTOR_PROFILE;
   const [open, setOpen] = useState(false);
   const [modal, setModal] = useState(null);
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -58,7 +87,7 @@ export default function ProfileMenu() {
   const ref = useClickOutside(() => setOpen(false), open);
 
   const initials =
-    String(user?.name ?? t('role.doctor'))
+    String(user?.name ?? t(`role.${user?.role ?? 'doctor'}`))
       .replace('Dr. ', '')
       .split(' ')
       .map((n) => n[0])
@@ -96,8 +125,9 @@ export default function ProfileMenu() {
   };
 
   const handleLogout = () => {
+    const portalLogin = { ngo: '/login/ngo', government: '/login/government' }[user?.role];
     logout();
-    navigate('/doctor/login', { replace: true });
+    navigate(portalLogin ?? `/${user?.role ?? 'doctor'}/login`, { replace: true });
   };
 
   const menuItems = [
@@ -120,7 +150,7 @@ export default function ProfileMenu() {
         </div>
         <div className="hidden sm:block text-left">
           <p className="font-bold text-on-surface text-sm">{user?.name}</p>
-          <p className="text-label-md text-on-surface-variant">{DOCTOR_PROFILE.specialization}</p>
+          <p className="text-label-md text-on-surface-variant">{profile.designation}</p>
         </div>
         <span className="material-symbols-outlined text-on-surface-variant hidden sm:block text-sm">expand_more</span>
       </button>
@@ -178,18 +208,20 @@ export default function ProfileMenu() {
           <div className="min-w-0">
             <p className="font-headline text-title-lg font-bold text-on-surface truncate">{user?.name}</p>
             <p className="text-on-surface-variant">
-              {DOCTOR_PROFILE.specialization} · {DOCTOR_PROFILE.hospital}
+              {profile.designation} · {profile.organization}
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <ProfileField icon="badge" label={t('settings.doctorId')} value={DOCTOR_PROFILE.doctorId} />
-          <ProfileField icon="work" label={t('settings.specialization')} value={DOCTOR_PROFILE.specialization} />
-          <ProfileField icon="mail" label={t('settings.email')} value={user?.email} />
-          <ProfileField icon="call" label={t('settings.phoneNumber')} value={DOCTOR_PROFILE.phone} />
-          <ProfileField icon="local_hospital" label={t('settings.hospital')} value={DOCTOR_PROFILE.hospital} />
-          <ProfileField icon="school" label={t('settings.experience')} value={DOCTOR_PROFILE.experience} />
+          {profile.fields.map((field) => (
+            <ProfileField
+              key={field.labelKey}
+              icon={field.icon}
+              label={t(`settings.${field.labelKey}`)}
+              value={field.fromUser ? user?.[field.fromUser] : profile[field.valueKey]}
+            />
+          ))}
         </div>
 
         <div className="mt-4 flex items-center justify-between gap-3 bg-surface-container-low rounded-lg p-4">

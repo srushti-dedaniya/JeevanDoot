@@ -5,9 +5,8 @@ export const AuthContext = createContext(null);
 const MOCK_CREDENTIALS = {
   admin: { role: 'admin', name: 'Admin Miller', email: 'admin@jeevandoot.org' },
   doctor: { role: 'doctor', name: 'Dr. Sharma', email: 'doctor@jeevandoot.org' },
-  chw: { role: 'chw', name: 'Priya Sharma', email: 'chw@jeevandoot.org' },
   patient: { role: 'patient', name: 'Patient', email: 'patient@jeevandoot.org' },
-  ngo: { role: 'ngo', name: 'NGO Member', email: 'ngo@jeevandoot.org' },
+  ngo: { role: 'ngo', name: 'Anjali Nair', email: 'ngo@jeevandoot.org' },
   government: { role: 'government', name: 'Government Official', email: 'govt@jeevandoot.org' },
 };
 

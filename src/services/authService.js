@@ -4,7 +4,6 @@ import { sleep } from '../utils/helpers';
 const MOCK_USERS = {
   admin: { id: 'adm-1', name: 'Admin Miller', role: 'admin' },
   doctor: { id: 'doc-1', name: 'Dr. Sharma', role: 'doctor' },
-  chw: { id: 'chw-1', name: 'Priya Sharma', role: 'chw' },
 };
 
 export const authService = {

@@ -2,7 +2,7 @@ import { ROLES } from './constants';
 
 /**
  * Permission matrix for the JeevanDoot platform.
- * Role hierarchy: admin > doctor > chw
+ * Role hierarchy: admin > doctor
  */
 const PERMISSIONS = {
   [ROLES.ADMIN]: [
@@ -37,14 +37,6 @@ const PERMISSIONS = {
     'refer:patients',
     'schedule:followup',
     'export:data',
-  ],
-  [ROLES.CHW]: [
-    'view:dashboard',
-    'view:patients',
-    'view:visits',
-    'manage:screening',
-    'refer:patients',
-    'view:reports',
   ],
 };
 

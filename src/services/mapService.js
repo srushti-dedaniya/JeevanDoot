@@ -29,17 +29,4 @@ export const mapService = {
     const { data } = await api.get('/surveillance/clusters', params);
     return data;
   },
-
-  async getWorkersMap() {
-    if (isMockMode()) {
-      await sleep(500);
-      return [
-        { cluster: 'Dhamtari Cluster', workers: 12, coverage: 92 },
-        { cluster: 'Bijapur Sector', workers: 8, coverage: 74 },
-        { cluster: 'Lormi Block', workers: 10, coverage: 88 },
-      ];
-    }
-    const { data } = await api.get('/workers/map');
-    return data;
-  },
 };

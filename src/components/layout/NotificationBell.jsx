@@ -2,10 +2,9 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cx } from '../../utils/helpers';
 import { useClickOutside } from '../../hooks/useClickOutside';
+import { useAuth } from '../../hooks/useAuth';
 
-const STORAGE_KEY = 'jd_notifications';
-
-const SAMPLE_NOTIFICATIONS = [
+const DOCTOR_NOTIFICATIONS = [
   {
     id: 'n1',
     titleKey: 'n1Title',
@@ -53,6 +52,49 @@ const SAMPLE_NOTIFICATIONS = [
   },
 ];
 
+const NGO_NOTIFICATIONS = [
+  {
+    id: 'ngo1',
+    titleKey: 'ngoN1Title',
+    descKey: 'ngoN1Desc',
+    timeKey: 'ngoN1Time',
+    icon: 'vaccines',
+    tone: 'primary',
+    unread: true,
+  },
+  {
+    id: 'ngo2',
+    titleKey: 'ngoN2Title',
+    descKey: 'ngoN2Desc',
+    timeKey: 'ngoN2Time',
+    icon: 'payments',
+    tone: 'success',
+    unread: true,
+  },
+  {
+    id: 'ngo3',
+    titleKey: 'ngoN3Title',
+    descKey: 'ngoN3Desc',
+    timeKey: 'ngoN3Time',
+    icon: 'volunteer_activism',
+    tone: 'secondary',
+    unread: true,
+  },
+  {
+    id: 'ngo4',
+    titleKey: 'ngoN4Title',
+    descKey: 'ngoN4Desc',
+    timeKey: 'ngoN4Time',
+    icon: 'campaign',
+    tone: 'tertiary',
+    unread: false,
+  },
+];
+
+const NOTIFICATIONS_BY_ROLE = {
+  ngo: NGO_NOTIFICATIONS,
+};
+
 const TONE_STYLES = {
   primary: 'bg-primary-fixed-dim/40 text-primary',
   secondary: 'bg-secondary-container/60 text-on-secondary-container',
@@ -60,19 +102,23 @@ const TONE_STYLES = {
   success: 'bg-success-container text-on-success-container',
 };
 
-const loadNotifications = () => {
+const loadNotifications = (key, fallback) => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = localStorage.getItem(key);
     if (stored) return JSON.parse(stored);
   } catch {
     /* ignore storage errors */
   }
-  return SAMPLE_NOTIFICATIONS;
+  return fallback;
 };
 
 export default function NotificationBell() {
+  const { user } = useAuth();
   const { t } = useTranslation();
-  const [notifications, setNotifications] = useState(loadNotifications);
+  const role = user?.role;
+  const storageKey = `jd_notifications_${role ?? 'default'}`;
+  const fallback = NOTIFICATIONS_BY_ROLE[role] ?? DOCTOR_NOTIFICATIONS;
+  const [notifications, setNotifications] = useState(() => loadNotifications(storageKey, fallback));
   const [open, setOpen] = useState(false);
   const ref = useClickOutside(() => setOpen(false), open);
 
@@ -87,11 +133,11 @@ export default function NotificationBell() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(notifications));
+      localStorage.setItem(storageKey, JSON.stringify(notifications));
     } catch {
       /* ignore storage errors */
     }
-  }, [notifications]);
+  }, [notifications, storageKey]);
 
   const markAsRead = (id) => {
     setNotifications((prev) =>

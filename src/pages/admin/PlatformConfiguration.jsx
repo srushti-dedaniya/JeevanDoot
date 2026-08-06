@@ -14,7 +14,6 @@ const SIDEBAR = {
     { label: 'Audit Log', to: '/admin/audit-log', icon: 'verified_user' },
     { label: 'Report Generation', to: '/admin/reports', icon: 'summarize' },
     { label: 'Doctor Management', to: '/admin/doctors', icon: 'medical_services' },
-    { label: 'CHW Management', to: '/admin/chws', icon: 'volunteer_activism' },
     { label: 'Configuration', to: '/admin/settings', icon: 'settings' },
   ],
 };
@@ -83,7 +82,7 @@ export default function PlatformConfiguration() {
       icon: 'medical_services',
       items: [
         { key: 'mlRisk', label: 'ML Risk Prediction', description: 'Use ML models to flag high-risk patients' },
-        { key: 'offlineMode', label: 'Offline Mode', description: 'Allow CHWs to capture data without network' },
+        { key: 'offlineMode', label: 'Offline Mode', description: 'Allow field workers to capture data without network' },
       ],
     },
   ];

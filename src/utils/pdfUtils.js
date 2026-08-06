@@ -360,3 +360,188 @@ export const downloadReportPDF = (report = {}) => {
 
   doc.save(`Report_${sanitizeFileName(report.id || report.type)}.pdf`);
 };
+
+/**
+ * Generates a quarterly impact report PDF for the NGO portal,
+ * mirroring the prescription/report PDF styling.
+ * Expected data shape:
+ *  - title, period, organization
+ *  - stats: [{ label, value, note }]
+ *  - quarterlyLabels: string[], quarterlyData: number[]
+ *  - serviceSplit: [{ label, value }]  (value is a percentage share)
+ *  - activities: string[]
+ */
+export const downloadImpactReportPDF = ({
+  title = 'Quarterly Impact Report',
+  period = '',
+  organization = '',
+  stats = [],
+  quarterlyLabels = [],
+  quarterlyData = [],
+  serviceSplit = [],
+  activities = [],
+} = {}) => {
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 44;
+  const contentWidth = pageWidth - marginX * 2;
+  let y = 0;
+
+  const ensureSpace = (needed) => {
+    if (y + needed > pageHeight - 70) {
+      doc.addPage();
+      y = 60;
+    }
+  };
+
+  doc.setFillColor(...PRIMARY);
+  doc.rect(0, 0, pageWidth, 5, 'F');
+  doc.setFillColor(...SECONDARY);
+  doc.rect(0, 5, pageWidth, 3, 'F');
+
+  doc.setTextColor(...PRIMARY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.text('JeevanDoot', marginX, 52);
+  doc.setTextColor(...SECONDARY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(11);
+  doc.text('Rural Community Care', marginX, 68);
+
+  doc.setTextColor(...ON_SURFACE_VARIANT);
+  doc.setFontSize(10);
+  doc.text(`Date: ${formatDate(new Date(), 'MMM d, yyyy')}`, pageWidth - marginX, 52, { align: 'right' });
+
+  doc.setDrawColor(...PRIMARY);
+  doc.setLineWidth(1.2);
+  doc.line(marginX, 84, pageWidth - marginX, 84);
+
+  y = 108;
+
+  const sectionTitle = (text) => {
+    ensureSpace(44);
+    doc.setTextColor(...PRIMARY);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.text(String(text).toUpperCase(), marginX, y);
+    doc.setDrawColor(...OUTLINE);
+    doc.setLineWidth(0.6);
+    doc.line(marginX, y + 5, pageWidth - marginX, y + 5);
+    y += 24;
+  };
+
+  const bodyText = (text, fallback = '—') => {
+    doc.setTextColor(...ON_SURFACE);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10.5);
+    const lines = doc.splitTextToSize(norm(text) || fallback, contentWidth);
+    for (const line of lines) {
+      ensureSpace(14);
+      doc.text(line, marginX, y);
+      y += 14;
+    }
+    y += 4;
+  };
+
+  doc.setTextColor(...PRIMARY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text(String(title), marginX, y);
+  y += 22;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10.5);
+  if (norm(organization)) {
+    doc.setTextColor(...ON_SURFACE);
+    doc.text(`Organization: ${norm(organization)}`, marginX, y);
+    y += 16;
+  }
+  if (norm(period)) {
+    doc.setTextColor(...ON_SURFACE_VARIANT);
+    doc.text(`Reporting Period: ${norm(period)}`, marginX, y);
+    y += 16;
+  }
+
+  if (stats.length > 0) {
+    sectionTitle('Key Impact Statistics');
+    ensureSpace(70);
+    autoTable(doc, {
+      startY: y,
+      head: [['Metric', 'Value', 'Note']],
+      body: stats.map((stat) => [
+        norm(stat.label) || '—',
+        norm(stat.value) || '—',
+        norm(stat.note) || '—',
+      ]),
+      margin: { left: marginX, right: marginX },
+      styles: { fontSize: 10, cellPadding: 7, textColor: ON_SURFACE, lineColor: OUTLINE, lineWidth: 0.5 },
+      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [246, 249, 243] },
+    });
+    y = (doc.lastAutoTable?.finalY || y) + 20;
+  }
+
+  if (quarterlyLabels.length > 0) {
+    sectionTitle('Outreach Growth');
+    doc.setTextColor(...ON_SURFACE_VARIANT);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text('Beneficiaries reached per quarter', marginX, y);
+    y += 16;
+    ensureSpace(60);
+    autoTable(doc, {
+      startY: y,
+      head: [quarterlyLabels.map(String)],
+      body: [quarterlyData.map((value) => String(value ?? '—'))],
+      margin: { left: marginX, right: marginX },
+      styles: { fontSize: 10, cellPadding: 7, textColor: ON_SURFACE, lineColor: OUTLINE, lineWidth: 0.5, halign: 'center' },
+      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [246, 249, 243] },
+    });
+    y = (doc.lastAutoTable?.finalY || y) + 20;
+  }
+
+  if (serviceSplit.length > 0) {
+    sectionTitle('Service Split');
+    ensureSpace(70);
+    autoTable(doc, {
+      startY: y,
+      head: [['Service', 'Share (%)']],
+      body: serviceSplit.map((service) => [
+        norm(service.label) || '—',
+        String(service.value ?? '—'),
+      ]),
+      margin: { left: marginX, right: marginX },
+      styles: { fontSize: 10, cellPadding: 7, textColor: ON_SURFACE, lineColor: OUTLINE, lineWidth: 0.5 },
+      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [246, 249, 243] },
+    });
+    y = (doc.lastAutoTable?.finalY || y) + 20;
+  }
+
+  if (activities.length > 0) {
+    sectionTitle('Recent Milestones');
+    activities.forEach((activity) => bodyText(`• ${activity}`));
+  }
+
+  ensureSpace(140);
+  const signatureY = Math.max(y + 70, pageHeight - 150);
+  doc.setDrawColor(...ON_SURFACE);
+  doc.setLineWidth(0.75);
+  doc.line(marginX, signatureY, marginX + 220, signatureY);
+  doc.setTextColor(...ON_SURFACE);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text('Authorized Signature', marginX, signatureY + 16);
+
+  doc.setDrawColor(...PRIMARY);
+  doc.setLineWidth(1.2);
+  doc.line(marginX, pageHeight - 64, pageWidth - marginX, pageHeight - 64);
+  doc.setTextColor(...ON_SURFACE_VARIANT);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.text('Generated electronically by JeevanDoot', marginX, pageHeight - 48);
+  doc.text('Rural Community Care Platform', pageWidth - marginX, pageHeight - 48, { align: 'right' });
+
+  doc.save('ImpactReport.pdf');
+};

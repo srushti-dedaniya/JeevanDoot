@@ -21,7 +21,6 @@ const SIDEBAR = {
     { labelKey: 'auditLog', to: '/admin/audit-log', icon: 'verified_user' },
     { labelKey: 'reportGeneration', to: '/admin/reports', icon: 'summarize' },
     { labelKey: 'doctorManagement', to: '/admin/doctors', icon: 'medical_services' },
-    { labelKey: 'chwManagement', to: '/admin/chws', icon: 'volunteer_activism' },
     { labelKey: 'configuration', to: '/admin/settings', icon: 'settings' },
   ],
 };

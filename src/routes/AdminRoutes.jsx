@@ -6,7 +6,6 @@ import HighRiskAuditLog from '../pages/admin/HighRiskAuditLog';
 import ReportGeneration from '../pages/admin/ReportGeneration';
 import PlatformConfiguration from '../pages/admin/PlatformConfiguration';
 import DoctorManagement from '../pages/admin/DoctorManagement';
-import CHWManagement from '../pages/admin/CHWManagement';
 import NotFound from '../pages/errors/404';
 
 export default function AdminRoutes() {
@@ -19,7 +18,6 @@ export default function AdminRoutes() {
       <Route path="reports" element={<ReportGeneration />} />
       <Route path="settings" element={<PlatformConfiguration />} />
       <Route path="doctors" element={<DoctorManagement />} />
-      <Route path="chws" element={<CHWManagement />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

@@ -4,7 +4,6 @@ export const APP_TAGLINE = 'Rural Community Care';
 export const ROLES = {
   ADMIN: 'admin',
   DOCTOR: 'doctor',
-  CHW: 'chw',
   PATIENT: 'patient',
   NGO: 'ngo',
   GOVERNMENT: 'government',
@@ -13,7 +12,6 @@ export const ROLES = {
 export const ROLE_LABELS = {
   admin: 'Admin',
   doctor: 'Doctor',
-  chw: 'Health Worker',
   patient: 'Patient',
   ngo: 'NGO',
   government: 'Government',
@@ -44,12 +42,6 @@ export const ROLE_META = {
     description: 'Surveillance & public policy',
     color: 'bg-primary-fixed text-on-primary-fixed-variant',
   },
-  chw: {
-    label: 'Health Worker',
-    icon: 'home_work',
-    description: 'Household care & surveys',
-    color: 'bg-secondary-container text-on-secondary-container',
-  },
   admin: {
     label: 'Admin',
     icon: 'admin_panel_settings',
@@ -63,8 +55,8 @@ export const REGISTRATION_ROLES = ['doctor', 'patient', 'ngo', 'government'];
 export const ROLE_PORTAL = {
   admin: '/admin/dashboard',
   doctor: '/doctor/dashboard',
-  chw: '/chw/dashboard',
   patient: '/patient/dashboard',
+  ngo: '/ngo/dashboard',
 };
 
 export const RISK_LEVELS = {

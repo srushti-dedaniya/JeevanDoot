@@ -1,10 +1,10 @@
 # JeevanDoot — Rural Community Care Platform
 
-A web application that digitises primary healthcare delivery in rural India. It provides three role-based portals built as a single-page React app:
+A web application that digitises primary healthcare delivery in rural India. It provides role-based portals built as a single-page React app:
 
 - **Doctor portal** — patient queue, case summaries, e-prescriptions, specialist referrals, follow-up scheduling, live teleconsultation, performance analytics.
-- **Admin / Government portal** — district dashboard, disease cluster surveillance, case-level analytics, high-risk audit log, report generation & export, doctor & CHW management, platform configuration.
-- **CHW (Community Health Worker) portal** — household registration, health surveys, field reports, community education campaigns, visit scheduling.
+- **Admin / Government portal** — district dashboard, disease cluster surveillance, case-level analytics, high-risk audit log, report generation & export, doctor management, platform configuration.
+- **NGO portal** — health camp planning, donation tracking, community outreach and impact reporting.
 
 All data is currently served by built-in mock services (no backend required). The design follows the Material 3 "SwasthyaLink / JeevanDoot" palette.
 
@@ -48,13 +48,13 @@ The root URL (`/`) shows a public **Home page** with a **Register** page (choose
 | ------------------ | ------------------------- |
 | Admin              | `admin@jeevandoot.org`    |
 | Doctor             | `doctor@jeevandoot.org`   |
-| Health Worker (CHW) | `chw@jeevandoot.org`     |
+| NGO                | `ngo@jeevandoot.org`      |
 
 Example paths once logged in:
 
 - Admin: `http://localhost:5173/admin/dashboard`
 - Doctor: `http://localhost:5173/doctor/dashboard`
-- CHW: `http://localhost:5173/chw/dashboard`
+- NGO: `http://localhost:5173/ngo/dashboard`
 
 ---
 
@@ -108,10 +108,10 @@ jeevandoot-web/
 │   │   ├── map/            # Surveillance map & village clusters
 │   │   └── consultation/   # Video call + chat panel
 │   ├── pages/
-│   │   ├── auth/           # Admin / Doctor / CHW login
+│   │   ├── auth/           # Admin / Doctor / Patient login
 │   │   ├── admin/          # 8 admin pages
 │   │   ├── doctor/         # 8 doctor pages
-│   │   ├── chw/            # 6 CHW pages
+│   │   ├── ngo/            # 4 NGO pages (dashboard, camps, donations, impact)
 │   │   └── errors/         # 404 & Unauthorized
 │   ├── routes/             # Role-based route collections + ProtectedRoute
 │   ├── context/            # Auth, Theme, Notification, User providers

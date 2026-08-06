@@ -40,3 +40,21 @@ export const downloadTextFile = (content, filename, mimeType = 'text/csv') => {
   link.click();
   URL.revokeObjectURL(link.href);
 };
+
+const escapeCSVField = (value) => {
+  const str = value == null ? '' : String(value);
+  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+};
+
+/**
+ * Downloads rows as a proper, spreadsheet-editable CSV file.
+ * Adds a UTF-8 BOM so Excel opens non-ASCII text correctly and
+ * quotes any field containing commas, quotes, or line breaks.
+ */
+export const downloadCSV = (filename, headers, rows) => {
+  const lines = [
+    headers.map(escapeCSVField).join(','),
+    ...rows.map((row) => row.map(escapeCSVField).join(',')),
+  ];
+  downloadTextFile(`\uFEFF${lines.join('\r\n')}`, filename, 'text/csv');
+};

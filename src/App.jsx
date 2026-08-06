@@ -8,7 +8,6 @@ import SignInPage from './pages/SignInPage';
 import RoleLogin from './pages/RoleLogin';
 import AdminLogin from './pages/auth/AdminLogin';
 import DoctorLogin from './pages/auth/DoctorLogin';
-import CHWLogin from './pages/auth/CHWLogin';
 import PatientLogin from './pages/auth/PatientLogin';
 import NotFound from './pages/errors/404';
 import Unauthorized from './pages/errors/Unauthorized';
@@ -28,7 +27,6 @@ export default function App() {
         {/* Public authentication pages */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/doctor/login" element={<DoctorLogin />} />
-        <Route path="/chw/login" element={<CHWLogin />} />
         <Route path="/patient/login" element={<PatientLogin />} />
 
         {/* Protected dashboards */}
@@ -49,18 +47,18 @@ export default function App() {
           }
         />
         <Route
-          path="/chw/*"
-          element={
-            <ProtectedRoute allowedRoles={['chw']}>
-              <AppRoutes role="chw" />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/patient/*"
           element={
             <ProtectedRoute allowedRoles={['patient']}>
               <AppRoutes role="patient" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/ngo/*"
+          element={
+            <ProtectedRoute allowedRoles={['ngo']}>
+              <AppRoutes role="ngo" />
             </ProtectedRoute>
           }
         />
