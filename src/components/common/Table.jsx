@@ -32,7 +32,7 @@ export default function Table({ columns = [], data = [], rowKey, onRowClick, emp
               onClick={() => onRowClick?.(row)}
               className={cx(
                 'border-b border-outline-variant hover:bg-surface-container-low transition-colors',
-                index % 2 === 0 ? 'bg-white' : 'bg-surface-container-low'
+                index % 2 === 0 ? 'bg-surface-container-lowest' : 'bg-surface-container-low'
               )}
             >
               {columns.map((col) => (

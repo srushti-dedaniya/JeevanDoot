@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import NotificationBell from '../../components/layout/NotificationBell';
+import ProfileMenu from '../../components/layout/ProfileMenu';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -12,18 +14,28 @@ const SIDEBAR = {
     { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
     { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
     { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
+    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
     { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
-function VitalCard({ label, value, unit, icon }) {
+function VitalCard({ label, value, unit, icon, numeric = false }) {
+  const displayValue = (() => {
+    if (value === null || value === undefined || value === '') return '—';
+    if (numeric) {
+      const num = Number(value);
+      return Number.isFinite(num) ? String(num) : '—';
+    }
+    return String(value);
+  })();
+
   return (
-    <div className="bg-surface-container-low rounded-lg p-4 flex items-center gap-3">
-      <span className="material-symbols-outlined text-primary">{icon}</span>
-      <div>
-        <p className="text-label-md text-on-surface-variant">{label}</p>
-        <p className="font-headline font-bold text-on-surface">
-          {value} <span className="text-sm font-normal text-on-surface-variant">{unit}</span>
+    <div className="bg-surface-container-low rounded-lg p-4 flex items-center gap-3 min-w-0">
+      <span className="material-symbols-outlined text-primary shrink-0">{icon}</span>
+      <div className="min-w-0 flex-1">
+        <p className="text-label-md text-on-surface-variant truncate">{label}</p>
+        <p className="font-headline font-bold text-on-surface truncate">
+          {displayValue} <span className="text-sm font-normal text-on-surface-variant whitespace-nowrap">{unit}</span>
         </p>
       </div>
     </div>
@@ -44,8 +56,15 @@ export default function PatientCaseSummary() {
     load();
   }, [id]);
 
+  const headerRight = (
+    <>
+      <NotificationBell />
+      <ProfileMenu />
+    </>
+  );
+
   return (
-    <DashboardLayout sidebarProps={SIDEBAR} headerProps={{ title: 'Patient Case Summary', subtitle: id ? `Patient ID: ${id}` : 'Select a patient' }}>
+    <DashboardLayout sidebarProps={SIDEBAR} headerProps={{ title: 'Patient Case Summary', subtitle: id ? `Patient ID: ${id}` : 'Select a patient', right: headerRight }}>
       {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
@@ -100,7 +119,7 @@ export default function PatientCaseSummary() {
               <div className="grid grid-cols-2 gap-3">
                 <VitalCard label="Blood Pressure" value={patient.vitals?.bp} unit="mmHg" icon="blood_pressure" />
                 <VitalCard label="Temperature" value={patient.vitals?.temp} unit="°F" icon="device_thermostat" />
-                <VitalCard label="Pulse" value={patient.vitals?.pulse} unit="bpm" icon="pulse_rounded" />
+                <VitalCard label="Pulse" value={patient.vitals?.pulse} unit="bpm" icon="pulse_rounded" numeric />
                 <VitalCard label="Weight" value={patient.vitals?.weight} unit="kg" icon="monitor_weight" />
               </div>
             </Card>

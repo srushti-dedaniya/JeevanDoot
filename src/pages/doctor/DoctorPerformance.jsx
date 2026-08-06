@@ -13,6 +13,7 @@ const SIDEBAR = {
     { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
     { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
     { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
+    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
     { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };

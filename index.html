@@ -1,5 +1,5 @@
 <!doctype html>
-<html class="light" lang="en">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,16 +8,24 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="description" content="JeevanDoot - Rural Community Care Platform connecting doctors, health workers and remote communities." />
 
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('jd_theme');
+          var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var el = document.documentElement;
+          el.classList.remove('light', 'dark');
+          el.classList.add(dark ? 'dark' : 'light');
+          el.style.colorScheme = dark ? 'dark' : 'light';
+        } catch (e) {}
+      })();
+    </script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,200..900;1,7..72,200..900&family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&display=swap"
-      rel="stylesheet"
-    />
-    <!-- Material Symbols -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
       rel="stylesheet"
     />
   </head>

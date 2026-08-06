@@ -1,4 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import AppRoutes from './routes/AppRoutes';
 import ProtectedRoute from './routes/ProtectedRoute';
 import HomePage from './pages/HomePage';
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster position="top-center" toastOptions={{ duration: 4000 }} />
     </>
   );
 }

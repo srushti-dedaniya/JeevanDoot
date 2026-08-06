@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import './index.css';
 import './styles/globals.css';
@@ -13,13 +14,15 @@ import './styles/auth.css';
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
-        <UserProvider>
-          <NotificationProvider>
-            <App />
-          </NotificationProvider>
-        </UserProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <UserProvider>
+            <NotificationProvider>
+              <App />
+            </NotificationProvider>
+          </UserProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

@@ -1,18 +1,26 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Badge from '../../components/common/Badge';
-import { useNotification } from '../../hooks/useNotification';
+import Table from '../../components/common/Table';
 import { MEDICATION_SUGGESTIONS, COMMON_MEDICINE_SCHEDULES } from '../../utils/constants';
-import { downloadTextFile } from '../../utils/helpers';
+import {
+  validatePrescription,
+  savePrescription,
+  downloadPrescriptionPDF,
+  printPrescription,
+} from '../../utils/prescriptionUtils';
+import { consumePrescriptionDraft } from '../../utils/consultationUtils';
 
 const SIDEBAR = {
   items: [
     { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
     { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
     { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
+    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
     { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
@@ -23,40 +31,134 @@ const DEFAULT_SCHEDULE = {
   night: false,
 };
 
+const EMPTY_MEDICINE = {
+  medicineName: '',
+  dosage: '',
+  frequency: '',
+  duration: '',
+};
+
+const nextMedicineId = () => `med-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
 export default function PrescriptionWriting() {
-  const { notify } = useNotification();
   const [patientId, setPatientId] = useState('JD-9921');
   const [patientName, setPatientName] = useState('Meera Sharma');
-  const [medications, setMedications] = useState([]);
-  const [current, setCurrent] = useState({ name: '', dosage: '', frequency: '', duration: '', notes: '' });
+  const [medicines, setMedicines] = useState([]);
+  const [current, setCurrent] = useState(EMPTY_MEDICINE);
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
+  const [editingId, setEditingId] = useState(null);
   const [diagnosis, setDiagnosis] = useState('');
   const [advice, setAdvice] = useState('');
+  const [draftSource, setDraftSource] = useState(null);
 
-  const addMedication = () => {
-    if (!current.name.trim()) return;
-    setMedications((prev) => [...prev, { ...current, schedule }]);
-    setCurrent({ name: '', dosage: '', frequency: '', duration: '', notes: '' });
+  useEffect(() => {
+    const draft = consumePrescriptionDraft();
+    if (!draft) return;
+    if (draft.patientId) setPatientId(draft.patientId);
+    if (draft.patientName) setPatientName(draft.patientName);
+    if (draft.diagnosis) setDiagnosis(draft.diagnosis);
+    if (draft.advice) setAdvice(draft.advice);
+    if (Array.isArray(draft.medicines) && draft.medicines.length > 0) {
+      setMedicines(draft.medicines);
+    }
+    setDraftSource(draft.fromConsultation || null);
+    toast.success('Consultation details loaded — review before saving.');
+  }, []);
+
+  const scheduleLabel = (value = {}) =>
+    COMMON_MEDICINE_SCHEDULES.filter((slot) => value[slot.toLowerCase()]).join(', ');
+
+  const validateMedicineInput = () => {
+    const missing = [];
+    if (!current.medicineName.trim()) missing.push('Medicine Name');
+    if (!current.dosage.trim()) missing.push('Dosage');
+    if (!current.frequency.trim()) missing.push('Frequency');
+    if (!current.duration.trim()) missing.push('Duration');
+    return missing;
+  };
+
+  const resetMedicineForm = () => {
+    setCurrent(EMPTY_MEDICINE);
     setSchedule(DEFAULT_SCHEDULE);
+    setEditingId(null);
   };
 
-  const removeMedication = (index) => {
-    setMedications((prev) => prev.filter((_, i) => i !== index));
+  const addMedicine = () => {
+    const missing = validateMedicineInput();
+    if (missing.length > 0) {
+      toast.error(`Cannot add medicine. Missing: ${missing.join(', ')}`);
+      return;
+    }
+
+    if (editingId) {
+      setMedicines((prev) =>
+        prev.map((med) => (med.id === editingId ? { ...med, ...current, schedule } : med))
+      );
+      toast.success('Medicine updated.');
+    } else {
+      setMedicines((prev) => [...prev, { id: nextMedicineId(), ...current, schedule }]);
+      toast.success('Medicine added.');
+    }
+
+    resetMedicineForm();
   };
+
+  const startEdit = (med) => {
+    setEditingId(med.id);
+    setCurrent({
+      medicineName: med.medicineName,
+      dosage: med.dosage,
+      frequency: med.frequency,
+      duration: med.duration,
+    });
+    setSchedule(med.schedule || DEFAULT_SCHEDULE);
+    toast.success(`Editing: ${med.medicineName}`);
+  };
+
+  const removeMedicine = (med) => {
+    const confirmed = window.confirm(`Remove ${med.medicineName} from the prescription?`);
+    if (!confirmed) return;
+    setMedicines((prev) => prev.filter((m) => m.id !== med.id));
+    if (editingId === med.id) resetMedicineForm();
+    toast.success('Medicine removed.');
+  };
+
+  const buildData = () => ({
+    patientId,
+    patientName,
+    medicines,
+    diagnosis,
+    advice,
+  });
 
   const handleDownload = () => {
-    const body = medications
-      .map((m, i) => `${i + 1}. ${m.name} — ${m.dosage}, ${m.frequency}, for ${m.duration} days`)
-      .join('\n');
-    downloadTextFile(
-      `JeevanDoot Prescription\nPatient: ${patientName} (${patientId})\nDiagnosis: ${diagnosis || 'N/A'}\n\n${body}\n\nAdvice: ${advice || 'N/A'}`,
-      `prescription-${patientId}.txt`
-    );
-    notify({ type: 'success', message: 'Prescription downloaded' });
+    const missingFields = validatePrescription(buildData());
+    if (missingFields.length > 0) {
+      toast.error(`Cannot download PDF. Missing: ${missingFields.join(', ')}`);
+      return;
+    }
+    downloadPrescriptionPDF(buildData());
+    toast.success('Prescription PDF downloaded.');
   };
 
   const handleSave = () => {
-    notify({ type: 'success', message: 'Prescription saved successfully' });
+    const result = savePrescription(buildData());
+    if (result.success) {
+      toast.success('Prescription saved successfully.');
+    } else if (result.missingFields) {
+      toast.error(`Cannot save prescription. Missing: ${result.missingFields.join(', ')}`);
+    } else {
+      toast.error(result.error || 'Could not save the prescription.');
+    }
+  };
+
+  const handlePrint = () => {
+    const missingFields = validatePrescription(buildData());
+    if (missingFields.length > 0) {
+      toast.error(`Cannot print. Missing: ${missingFields.join(', ')}`);
+      return;
+    }
+    printPrescription(buildData());
   };
 
   return (
@@ -64,6 +166,15 @@ export default function PrescriptionWriting() {
       sidebarProps={SIDEBAR}
       headerProps={{ title: 'Prescription Writing', subtitle: 'Create a new electronic prescription' }}
     >
+      {draftSource && (
+        <div className="mb-6 flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-xl px-5 py-4">
+          <span className="material-symbols-outlined">fact_check</span>
+          <p className="font-bold">
+            Prefilled from consultation {draftSource}. Medicines shown are AI recommendations —
+            please review before saving.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card title="Patient Information" icon="person">
@@ -73,12 +184,16 @@ export default function PrescriptionWriting() {
             </div>
           </Card>
 
-          <Card title="Add Medication" icon="medication">
+          <Card
+            title={editingId ? 'Edit Medicine' : 'Add Medication'}
+            icon="medication"
+            subtitle={editingId ? 'Update the medicine details below' : 'Add medicines one at a time'}
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Medication Name"
-                value={current.name}
-                onChange={(e) => setCurrent((c) => ({ ...c, name: e.target.value }))}
+                label="Medicine Name"
+                value={current.medicineName}
+                onChange={(e) => setCurrent((c) => ({ ...c, medicineName: e.target.value }))}
                 placeholder="e.g. Paracetamol"
                 icon="medication"
               />
@@ -133,48 +248,86 @@ export default function PrescriptionWriting() {
 
             <div className="mt-4 flex items-end justify-between gap-4 flex-wrap">
               <div className="flex flex-wrap gap-2 flex-1">
-                {MEDICATION_SUGGESTIONS.filter((s) => !medications.some((m) => m.name === s)).slice(0, 4).map((s) => (
+                {MEDICATION_SUGGESTIONS.filter((s) => !medicines.some((m) => m.medicineName === s)).slice(0, 4).map((s) => (
                   <button
                     key={s}
                     type="button"
-                    onClick={() => setCurrent((c) => ({ ...c, name: s }))}
+                    onClick={() => setCurrent((c) => ({ ...c, medicineName: s }))}
                     className="px-3 py-1.5 rounded-full bg-surface-container-low border border-outline-variant text-label-md hover:bg-primary-container transition-colors"
                   >
                     {s}
                   </button>
                 ))}
               </div>
-              <Button type="button" onClick={addMedication} icon="add_circle" variant="secondary">
-                Add to Prescription
-              </Button>
+              <div className="flex items-center gap-3">
+                {editingId && (
+                  <Button type="button" onClick={resetMedicineForm} icon="close" variant="outline">
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={addMedicine}
+                  icon={editingId ? 'check' : 'add_circle'}
+                  variant={editingId ? 'primary' : 'secondary'}
+                >
+                  {editingId ? 'Update Medicine' : 'Add to Prescription'}
+                </Button>
+              </div>
             </div>
           </Card>
 
-          {medications.length > 0 && (
-            <Card title="Prescription Items" icon="playlist_add_check" subtitle={`${medications.length} items`}>
-              <div className="space-y-3">
-                {medications.map((m, i) => (
-                  <div key={i} className="flex items-center justify-between gap-4 bg-surface-container-low rounded-lg p-4">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <Badge variant="primary">{i + 1}</Badge>
-                      <div className="min-w-0">
-                        <p className="font-bold text-on-surface">{m.name}</p>
-                        <p className="text-label-md text-on-surface-variant">
-                          {m.dosage} · {m.frequency} · {m.duration} days
-                          {Object.entries(m.schedule ?? {}).filter(([, v]) => v).length > 0 && (
-                            <span>
-                              {' '}· {Object.entries(m.schedule).filter(([, v]) => v).map(([k]) => k).join(', ')}
-                            </span>
-                          )}
-                        </p>
+          {medicines.length > 0 && (
+            <Card
+              title="Prescription Items"
+              icon="playlist_add_check"
+              subtitle={`Medicines Added: ${medicines.length}`}
+            >
+              <Table
+                rowKey="id"
+                data={medicines}
+                columns={[
+                  { key: 'medicineName', header: 'Medicine' },
+                  { key: 'dosage', header: 'Dosage' },
+                  { key: 'frequency', header: 'Frequency' },
+                  {
+                    key: 'duration',
+                    header: 'Duration',
+                    render: (row) => `${row.duration} days`,
+                  },
+                  {
+                    key: 'schedule',
+                    header: 'Schedule',
+                    render: (row) => scheduleLabel(row.schedule) || '—',
+                  },
+                  {
+                    key: 'actions',
+                    header: 'Actions',
+                    render: (row) => (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => startEdit(row)}
+                          className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
+                          aria-label={`Edit ${row.medicineName}`}
+                          title="Edit medicine"
+                        >
+                          <span className="material-symbols-outlined text-lg">edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeMedicine(row)}
+                          className="p-2 rounded-full text-error hover:bg-error-container transition-colors"
+                          aria-label={`Delete ${row.medicineName}`}
+                          title="Delete medicine"
+                        >
+                          <span className="material-symbols-outlined text-lg">delete</span>
+                        </button>
                       </div>
-                    </div>
-                    <button onClick={() => removeMedication(i)} className="text-error hover:bg-error-container rounded-full p-2" aria-label="Remove">
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
-                ))}
-              </div>
+                    ),
+                  },
+                ]}
+              />
             </Card>
           )}
 
@@ -204,15 +357,44 @@ export default function PrescriptionWriting() {
         <div className="space-y-6">
           <Card title="Actions" icon="bolt">
             <div className="space-y-3">
-              <Button fullWidth onClick={handleSave} icon="save">Save Prescription</Button>
-              <Button fullWidth variant="secondary" onClick={handleDownload} icon="download">Download PDF</Button>
-              <Button fullWidth variant="outline" icon="print">Print</Button>
+              <p className="text-label-lg font-bold text-primary">
+                Medicines Added: <Badge variant="primary">{medicines.length}</Badge>
+              </p>
+              <Button
+                fullWidth
+                onClick={handleSave}
+                icon="save"
+                disabled={medicines.length === 0}
+                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+              >
+                Save Prescription
+              </Button>
+              <Button
+                fullWidth
+                variant="secondary"
+                onClick={handleDownload}
+                icon="download"
+                disabled={medicines.length === 0}
+                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+              >
+                Download PDF
+              </Button>
+              <Button
+                fullWidth
+                variant="outline"
+                onClick={handlePrint}
+                icon="print"
+                disabled={medicines.length === 0}
+                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+              >
+                Print
+              </Button>
             </div>
           </Card>
           <Card title="Quick Reference" icon="tips_and_updates">
             <ul className="space-y-2 text-label-md text-on-surface-variant">
-              <li>• Standard dose calculations are for adult patients.</li>
-              <li>• Flag any allergy conflicts before prescribing.</li>
+              <li>• Add multiple medicines to the same prescription.</li>
+              <li>• Edit or remove any medicine before saving.</li>
               <li>• E-prescriptions are digitally signed by JeevanDoot.</li>
               <li>• Schedule reminders auto-sync to patient phone.</li>
             </ul>

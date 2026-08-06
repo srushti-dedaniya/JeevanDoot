@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/layout/DashboardLayout';
+import NotificationBell from '../../components/layout/NotificationBell';
+import ProfileMenu from '../../components/layout/ProfileMenu';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -10,20 +12,19 @@ import PieChart from '../../components/charts/PieChart';
 import { doctorService } from '../../services/doctorService';
 import { patientService } from '../../services/patientService';
 import { useAuth } from '../../hooks/useAuth';
-import { useNotification } from '../../hooks/useNotification';
 
 const SIDEBAR = {
   items: [
     { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
     { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
     { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
+    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
     { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
-  const { notify } = useNotification();
   const [stats, setStats] = useState(null);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,23 +46,8 @@ export default function DoctorDashboard() {
 
   const headerRight = (
     <>
-      <button
-        onClick={() => notify({ type: 'info', message: 'Surveillance updated: 3 new alerts' })}
-        className="relative p-2 text-on-surface-variant hover:text-primary rounded-full transition-colors"
-        aria-label="Notifications"
-      >
-        <span className="material-symbols-outlined">notifications</span>
-        <span className="absolute top-1 right-1 w-3 h-3 bg-error rounded-full border-2 border-surface" />
-      </button>
-      <div className="flex items-center gap-3">
-        <div className="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center font-headline font-bold">
-          {user?.name?.replace('Dr. ', '').split(' ').map((n) => n[0]).join('') || 'D'}
-        </div>
-        <div>
-          <p className="font-bold text-on-surface text-sm">{user?.name}</p>
-          <p className="text-label-md text-on-surface-variant">General Physician</p>
-        </div>
-      </div>
+      <NotificationBell />
+      <ProfileMenu />
     </>
   );
 

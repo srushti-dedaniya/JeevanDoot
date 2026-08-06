@@ -1,8 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
+import { useTheme } from '../../hooks/useTheme';
 
 export default function LineChart({ labels, data, height = 320, options = {} }) {
   const canvasRef = useRef(null);
+  const { theme } = useTheme();
+  const dark = theme === 'dark';
 
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
@@ -16,11 +19,11 @@ export default function LineChart({ labels, data, height = 320, options = {} }) 
           {
             label: 'Consultations',
             data,
-            borderColor: '#1B5E4F',
-            backgroundColor: 'rgba(27, 94, 79, 0.1)',
+            borderColor: dark ? '#93D3C0' : '#1B5E4F',
+            backgroundColor: dark ? 'rgba(147, 211, 192, 0.12)' : 'rgba(27, 94, 79, 0.1)',
             fill: true,
             tension: 0.4,
-            pointBackgroundColor: '#1B5E4F',
+            pointBackgroundColor: dark ? '#93D3C0' : '#1B5E4F',
             pointRadius: 5,
             pointHoverRadius: 8,
           },
@@ -31,15 +34,22 @@ export default function LineChart({ labels, data, height = 320, options = {} }) 
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' } },
-          x: { grid: { display: false } },
+          y: {
+            beginAtZero: true,
+            grid: { color: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' },
+            ticks: { color: dark ? '#B0B3B8' : '#5A5A5A' },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { color: dark ? '#B0B3B8' : '#5A5A5A' },
+          },
         },
         ...options,
       },
     });
 
     return () => chart.destroy();
-  }, [labels, data, options]);
+  }, [labels, data, options, dark]);
 
   return (
     <div style={{ height }} className="w-full">

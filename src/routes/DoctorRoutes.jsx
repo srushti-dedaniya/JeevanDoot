@@ -7,6 +7,7 @@ import PatientReferral from '../pages/doctor/PatientReferral';
 import FollowUpScheduling from '../pages/doctor/FollowUpScheduling';
 import DoctorPerformance from '../pages/doctor/DoctorPerformance';
 import LiveConsultation from '../pages/doctor/LiveConsultation';
+import ConsultationHistory from '../pages/doctor/ConsultationHistory';
 import NotFound from '../pages/errors/404';
 
 export default function DoctorRoutes() {
@@ -20,6 +21,7 @@ export default function DoctorRoutes() {
       <Route path="followup" element={<FollowUpScheduling />} />
       <Route path="performance" element={<DoctorPerformance />} />
       <Route path="consultation" element={<LiveConsultation />} />
+      <Route path="consultation-history" element={<ConsultationHistory />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

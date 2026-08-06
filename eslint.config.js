@@ -20,6 +20,8 @@ export default [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         navigator: 'readonly',
+        indexedDB: 'readonly',
+        MediaRecorder: 'readonly',
         URL: 'readonly',
         URLSearchParams: 'readonly',
         fetch: 'readonly',

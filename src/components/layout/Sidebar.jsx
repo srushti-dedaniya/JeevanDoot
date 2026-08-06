@@ -19,7 +19,7 @@ export default function Sidebar({
   return (
     <aside
       className={cx(
-        'h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container-high shadow-sm z-50 flex flex-col',
+        'h-screen fixed left-0 top-0 bg-surface-container dark:bg-surface-container shadow-sm z-50 flex flex-col',
         width
       )}
     >
