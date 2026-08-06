@@ -1,12 +1,13 @@
 # JeevanDoot — Rural Community Care Platform
 
-A web application that digitises primary healthcare delivery in rural India. It provides role-based portals built as a single-page React app:
+A web application that digitises primary healthcare delivery in rural India. It provides role-based portals built as a single-page React app with an Express + MongoDB REST API:
 
 - **Doctor portal** — patient queue, case summaries, e-prescriptions, specialist referrals, follow-up scheduling, live teleconsultation, performance analytics.
 - **Admin / Government portal** — district dashboard, disease cluster surveillance, case-level analytics, high-risk audit log, report generation & export, doctor management, platform configuration.
 - **NGO portal** — health camp planning, donation tracking, community outreach and impact reporting.
+- **Patient portal** — appointments, prescriptions, consultations, reports, health monitoring and notifications.
 
-All data is currently served by built-in mock services (no backend required). The design follows the Material 3 "SwasthyaLink / JeevanDoot" palette.
+The frontend runs in **mock mode** by default (no backend required to explore the UI). A full backend lives in `backend/` with JWT authentication, role-based access control and seeded demo data. The design follows the Material 3 "SwasthyaLink / JeevanDoot" palette.
 
 ---
 
@@ -14,6 +15,7 @@ All data is currently served by built-in mock services (no backend required). Th
 
 - **Node.js** `^18 || ^20 || ^22` (developed with v26)
 - **npm** `^10`
+- **MongoDB** (only needed to run the backend) — local install, e.g. `mongod`
 
 Check your versions:
 
@@ -24,7 +26,7 @@ npm -v
 
 ---
 
-## Getting Started
+## Quick Start (frontend only — mock mode)
 
 ### 1. Install dependencies
 
@@ -48,17 +50,64 @@ The root URL (`/`) shows a public **Home page** with a **Register** page (choose
 | ------------------ | ------------------------- |
 | Admin              | `admin@jeevandoot.org`    |
 | Doctor             | `doctor@jeevandoot.org`   |
+| Patient            | `patient@jeevandoot.org`  |
 | NGO                | `ngo@jeevandoot.org`      |
+| Government         | `govt@jeevandoot.org`     |
 
 Example paths once logged in:
 
 - Admin: `http://localhost:5173/admin/dashboard`
 - Doctor: `http://localhost:5173/doctor/dashboard`
 - NGO: `http://localhost:5173/ngo/dashboard`
+- Patient: `http://localhost:5173/patient/dashboard`
+
+---
+
+## Running the Backend (API)
+
+The REST API requires MongoDB. If you're on Windows, start the MongoDB service:
+
+```powershell
+net start MongoDB
+```
+
+Then:
+
+```bash
+cd backend
+npm install
+
+# create your environment file (optional, defaults work out of the box)
+cp .env.example .env
+
+# seed demo data into MongoDB (use `npm run seed:reset` to wipe & reseed)
+npm run seed
+
+# start the API (use `npm start` for a plain server)
+npm run dev
+```
+
+The API listens at **http://localhost:5000/api/v1** (health check: `/api/v1/health`).
+
+Backend demo accounts all use password **`Password@123`**:
+
+| Role       | Email                    |
+| ---------- | ------------------------ |
+| Admin      | `admin@jeevandoot.org`   |
+| Doctor     | `doctor@jeevandoot.org`  |
+| Patient    | `patient@jeevandoot.org` |
+| NGO        | `ngo@jeevandoot.org`     |
+| Government | `govt@jeevandoot.org`    |
+
+See [`backend/README.md`](backend/README.md) for the full API endpoint reference.
+
+> **Note:** the frontend is not wired to the API yet — it runs on mock data. The `.env` section below shows how the frontend will point at a real backend once wiring is added.
 
 ---
 
 ## Available Scripts
+
+### Frontend (`/`)
 
 | Command            | Description                                   |
 | ------------------ | --------------------------------------------- |
@@ -66,6 +115,15 @@ Example paths once logged in:
 | `npm run build`    | Creates an optimised production build in `dist/` |
 | `npm run preview`  | Serves the production build locally           |
 | `npm run lint`     | Runs ESLint on `src` (0 warnings required)    |
+
+### Backend (`backend/`)
+
+| Command            | Description                             |
+| ------------------ | --------------------------------------- |
+| `npm run dev`      | Starts the API with nodemon (port 5000) |
+| `npm start`        | Starts the API without nodemon          |
+| `npm run seed`     | Seeds demo data into MongoDB            |
+| `npm run seed:reset` | Wipes and reseeds demo data           |
 
 ---
 
@@ -93,6 +151,8 @@ VITE_ENABLE_MOCK_API=false
 
 Services in `src/services/` automatically fall back to mock data when `VITE_ENABLE_MOCK_API` is `true` (the default) or `VITE_API_URL` is unset.
 
+Backend configuration lives in `backend/.env` — see `backend/.env.example` for the available variables (`PORT`, `MONGODB_URI`, `JWT_SECRET`, `CORS_ORIGIN`, etc.).
+
 ---
 
 ## Project Structure
@@ -108,10 +168,12 @@ jeevandoot-web/
 │   │   ├── map/            # Surveillance map & village clusters
 │   │   └── consultation/   # Video call + chat panel
 │   ├── pages/
-│   │   ├── auth/           # Admin / Doctor / Patient login
-│   │   ├── admin/          # 8 admin pages
-│   │   ├── doctor/         # 8 doctor pages
-│   │   ├── ngo/            # 4 NGO pages (dashboard, camps, donations, impact)
+│   │   ├── auth/           # Login & registration flows
+│   │   ├── admin/          # Admin pages
+│   │   ├── doctor/         # Doctor pages
+│   │   ├── patient/        # Patient pages
+│   │   ├── ngo/            # NGO pages (dashboard, camps, donations, impact)
+│   │   ├── government/     # Government pages (dashboard, schemes, queries)
 │   │   └── errors/         # 404 & Unauthorized
 │   ├── routes/             # Role-based route collections + ProtectedRoute
 │   ├── context/            # Auth, Theme, Notification, User providers
@@ -119,6 +181,17 @@ jeevandoot-web/
 │   ├── services/           # API clients with mock fallbacks
 │   ├── utils/              # Constants, validators, formatters, helpers
 │   └── styles/             # Design tokens & global styles
+├── backend/                # Express + MongoDB REST API
+│   ├── config/             # env.js, db.js (Mongo connection)
+│   ├── middleware/         # auth (JWT + role), validate, errorHandler, upload
+│   ├── models/             # Mongoose schemas (User, Patient, Doctor, ...)
+│   ├── controllers/        # request handlers, one per domain
+│   ├── routes/             # Express routers mounted under /api/v1
+│   ├── services/           # business logic (auth, notifications, dashboards)
+│   ├── uploads/            # multer file storage
+│   ├── utils/              # ApiError, asyncHandler, response envelope, IDs
+│   ├── seed/               # seed.js (demo data)
+│   └── server.js           # app entry point
 ├── .env                    # Optional API config (mock mode by default)
 ├── index.html
 ├── package.json
@@ -129,8 +202,15 @@ jeevandoot-web/
 
 ## Tech Stack
 
+**Frontend**
 - **React 18** + **Vite 5**
 - **React Router v6** (role-based routing)
 - **Tailwind CSS 3** with a custom Material 3 palette
 - **Chart.js 4** (line, bar, doughnut, heat map)
+- **i18next** (English, Hindi, Gujarati, Marathi)
 - **ESLint 9** (flat config)
+
+**Backend**
+- **Express 4** + **MongoDB** (Mongoose 8)
+- **JWT** authentication with role-based access control
+- **express-validator**, **multer** (uploads), **bcryptjs**
