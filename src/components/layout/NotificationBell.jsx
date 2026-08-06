@@ -91,8 +91,48 @@ const NGO_NOTIFICATIONS = [
   },
 ];
 
+const GOVERNMENT_NOTIFICATIONS = [
+  {
+    id: 'govt1',
+    titleKey: 'govtN1Title',
+    descKey: 'govtN1Desc',
+    timeKey: 'govtN1Time',
+    icon: 'trending_up',
+    tone: 'success',
+    unread: true,
+  },
+  {
+    id: 'govt2',
+    titleKey: 'govtN2Title',
+    descKey: 'govtN2Desc',
+    timeKey: 'govtN2Time',
+    icon: 'help',
+    tone: 'tertiary',
+    unread: true,
+  },
+  {
+    id: 'govt3',
+    titleKey: 'govtN3Title',
+    descKey: 'govtN3Desc',
+    timeKey: 'govtN3Time',
+    icon: 'description',
+    tone: 'primary',
+    unread: true,
+  },
+  {
+    id: 'govt4',
+    titleKey: 'govtN4Title',
+    descKey: 'govtN4Desc',
+    timeKey: 'govtN4Time',
+    icon: 'campaign',
+    tone: 'secondary',
+    unread: false,
+  },
+];
+
 const NOTIFICATIONS_BY_ROLE = {
   ngo: NGO_NOTIFICATIONS,
+  government: GOVERNMENT_NOTIFICATIONS,
 };
 
 const TONE_STYLES = {

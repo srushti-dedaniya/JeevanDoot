@@ -57,6 +57,7 @@ export const ROLE_PORTAL = {
   doctor: '/doctor/dashboard',
   patient: '/patient/dashboard',
   ngo: '/ngo/dashboard',
+  government: '/government/dashboard',
 };
 
 export const RISK_LEVELS = {

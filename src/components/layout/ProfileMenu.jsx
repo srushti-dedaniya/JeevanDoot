@@ -43,8 +43,26 @@ const NGO_PROFILE = {
   ],
 };
 
+const GOVERNMENT_PROFILE = {
+  workerId: 'GOVT-3011',
+  designation: 'District Health Officer',
+  phone: '+91 98765 55500',
+  organization: 'District Health Office',
+  experience: '10 years',
+  region: 'Dhamtari District',
+  fields: [
+    { icon: 'badge', labelKey: 'workerId', valueKey: 'workerId' },
+    { icon: 'work', labelKey: 'designation', valueKey: 'designation' },
+    { icon: 'mail', labelKey: 'email', fromUser: 'email' },
+    { icon: 'call', labelKey: 'phoneNumber', valueKey: 'phone' },
+    { icon: 'account_balance', labelKey: 'organization', valueKey: 'organization' },
+    { icon: 'location_on', labelKey: 'region', valueKey: 'region' },
+  ],
+};
+
 const PROFILE_BY_ROLE = {
   ngo: NGO_PROFILE,
+  government: GOVERNMENT_PROFILE,
 };
 
 const FAQS = [

@@ -7,7 +7,7 @@ const MOCK_CREDENTIALS = {
   doctor: { role: 'doctor', name: 'Dr. Sharma', email: 'doctor@jeevandoot.org' },
   patient: { role: 'patient', name: 'Patient', email: 'patient@jeevandoot.org' },
   ngo: { role: 'ngo', name: 'Anjali Nair', email: 'ngo@jeevandoot.org' },
-  government: { role: 'government', name: 'Government Official', email: 'govt@jeevandoot.org' },
+  government: { role: 'government', name: 'Anita Deshmukh', email: 'govt@jeevandoot.org' },
 };
 
 export const AuthProvider = ({ children }) => {

@@ -62,6 +62,14 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/government/*"
+          element={
+            <ProtectedRoute allowedRoles={['government']}>
+              <AppRoutes role="government" />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Errors */}
         <Route path="/unauthorized" element={<Unauthorized />} />
