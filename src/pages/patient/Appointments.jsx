@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import PatientSidebar from '../../components/layout/PatientSidebar';
 import Card from '../../components/common/Card';
@@ -13,6 +14,12 @@ const STATUS_BADGE = {
   Upcoming: 'primary',
   Completed: 'success',
   Cancelled: 'error',
+};
+
+const STATUS_LABEL_KEY = {
+  Upcoming: 'statusUpcoming',
+  Completed: 'statusCompleted',
+  Cancelled: 'statusCancelled',
 };
 
 const SECTION_META = {
@@ -82,11 +89,14 @@ const DUMMY_APPOINTMENTS = [
 const SECTION_ORDER = ['Upcoming', 'Completed', 'Cancelled'];
 
 function SectionHeader({ status, appointments }) {
+  const { t } = useTranslation();
   const meta = SECTION_META[status];
   return (
     <div className="flex items-center gap-3 mb-4">
       <span className={cx('material-symbols-outlined', meta.color)}>{meta.icon}</span>
-      <h2 className="font-headline text-headline-sm font-bold text-on-surface">{status}</h2>
+      <h2 className="font-headline text-headline-sm font-bold text-on-surface">
+        {t(`patient.appointments.${STATUS_LABEL_KEY[status]}`)}
+      </h2>
       <span className={cx('px-2.5 py-0.5 rounded-full text-label-md font-bold', meta.chip)}>
         {appointments.length}
       </span>
@@ -95,6 +105,7 @@ function SectionHeader({ status, appointments }) {
 }
 
 export default function Appointments() {
+  const { t } = useTranslation();
   const [appointments, setAppointments] = useState(DUMMY_APPOINTMENTS);
   const [viewTarget, setViewTarget] = useState(null);
   const [rescheduleTarget, setRescheduleTarget] = useState(null);
@@ -108,14 +119,14 @@ export default function Appointments() {
 
   const confirmReschedule = () => {
     if (!form.date || !form.time) {
-      toast.error('Please choose a new date and time.');
+      toast.error(t('patient.appointments.pickDateTime'));
       return;
     }
     setAppointments((prev) =>
       prev.map((apt) => (apt.id === rescheduleTarget.id ? { ...apt, date: form.date, time: form.time } : apt))
     );
     setRescheduleTarget(null);
-    toast.success('Appointment rescheduled successfully.');
+    toast.success(t('patient.appointments.rescheduled'));
   };
 
   const confirmCancel = () => {
@@ -123,7 +134,7 @@ export default function Appointments() {
       prev.map((apt) => (apt.id === cancelTarget.id ? { ...apt, status: 'Cancelled' } : apt))
     );
     setCancelTarget(null);
-    toast.success('Appointment cancelled.');
+    toast.success(t('patient.appointments.cancelled'));
   };
 
   const sections = SECTION_ORDER.map((status) => ({
@@ -132,7 +143,7 @@ export default function Appointments() {
   }));
 
   const badge = (status) => (
-    <Badge variant={STATUS_BADGE[status]}>{status}</Badge>
+    <Badge variant={STATUS_BADGE[status]}>{t(`patient.appointments.${STATUS_LABEL_KEY[status]}`)}</Badge>
   );
 
   const dateTime = (apt) => formatDate(`${apt.date}T${apt.time}:00`, 'EEE, MMM d, yyyy');
@@ -140,7 +151,7 @@ export default function Appointments() {
   return (
     <DashboardLayout
       sidebar={<PatientSidebar />}
-      headerProps={{ title: 'Appointments', subtitle: 'Schedule and manage visits' }}
+      headerProps={{ title: t('patient.appointments.title'), subtitle: t('patient.appointments.subtitle') }}
     >
       <div className="space-y-10">
         {sections.map(({ status, list }) => (
@@ -148,7 +159,11 @@ export default function Appointments() {
             <SectionHeader status={status} appointments={list} />
             {list.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-on-surface-variant">No {status.toLowerCase()} appointments.</p>
+                <p className="text-on-surface-variant">
+                  {t('patient.appointments.noAppointments', {
+                    status: t(`patient.appointments.${STATUS_LABEL_KEY[status]}`),
+                  })}
+                </p>
               </Card>
             ) : (
               <div className="space-y-4">
@@ -166,21 +181,21 @@ export default function Appointments() {
 
                         <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                           <div className="bg-surface-container-low rounded-lg p-4">
-                            <p className="text-label-md text-on-surface-variant">Date</p>
+                            <p className="text-label-md text-on-surface-variant">{t('common.date')}</p>
                             <p className="font-bold text-on-surface flex items-center gap-1.5 mt-1">
                               <span className="material-symbols-outlined text-primary text-lg">calendar_month</span>
                               {formatDate(`${apt.date}T00:00:00`, 'EEE, MMM d, yyyy')}
                             </p>
                           </div>
                           <div className="bg-surface-container-low rounded-lg p-4">
-                            <p className="text-label-md text-on-surface-variant">Time</p>
+                            <p className="text-label-md text-on-surface-variant">{t('common.time')}</p>
                             <p className="font-bold text-on-surface flex items-center gap-1.5 mt-1">
                               <span className="material-symbols-outlined text-primary text-lg">schedule</span>
                               {formatTime(`${apt.date}T${apt.time}:00`, 'h:mm a')}
                             </p>
                           </div>
                           <div className="bg-surface-container-low rounded-lg p-4 sm:col-span-1">
-                            <p className="text-label-md text-on-surface-variant">Purpose</p>
+                            <p className="text-label-md text-on-surface-variant">{t('patient.appointments.purpose')}</p>
                             <p className="font-bold text-on-surface flex items-center gap-1.5 mt-1">
                               <span className="material-symbols-outlined text-primary text-lg">medical_services</span>
                               {apt.purpose}
@@ -198,15 +213,15 @@ export default function Appointments() {
 
                       <div className="flex flex-row lg:flex-col justify-end gap-3 lg:w-64 shrink-0">
                         <Button variant="outline" icon="visibility" fullWidth onClick={() => setViewTarget(apt)}>
-                          View
+                          {t('common.view')}
                         </Button>
                         {status === 'Upcoming' && (
                           <>
                             <Button variant="secondary" icon="event_repeat" fullWidth onClick={() => openReschedule(apt)}>
-                              Reschedule
+                              {t('patient.appointments.reschedule')}
                             </Button>
                             <Button variant="danger" icon="event_busy" fullWidth onClick={() => setCancelTarget(apt)}>
-                              Cancel Appointment
+                              {t('patient.appointments.cancelAppointment')}
                             </Button>
                           </>
                         )}
@@ -223,7 +238,11 @@ export default function Appointments() {
       <Modal
         open={Boolean(viewTarget)}
         onClose={() => setViewTarget(null)}
-        title={viewTarget ? `Appointment ${viewTarget.id}` : 'Appointment'}
+        title={
+          viewTarget
+            ? t('patient.appointments.appointmentTitle', { id: viewTarget.id })
+            : t('patient.appointments.appointment')
+        }
         icon="event"
         size="lg"
       >
@@ -239,20 +258,20 @@ export default function Appointments() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-surface-container-low rounded-lg p-4">
-                <p className="text-label-md text-on-surface-variant">Date</p>
+                <p className="text-label-md text-on-surface-variant">{t('common.date')}</p>
                 <p className="font-bold text-on-surface">{dateTime(viewTarget)}</p>
               </div>
               <div className="bg-surface-container-low rounded-lg p-4">
-                <p className="text-label-md text-on-surface-variant">Time</p>
+                <p className="text-label-md text-on-surface-variant">{t('common.time')}</p>
                 <p className="font-bold text-on-surface">{formatTime(`${viewTarget.date}T${viewTarget.time}:00`, 'h:mm a')}</p>
               </div>
               <div className="bg-surface-container-low rounded-lg p-4 sm:col-span-2">
-                <p className="text-label-md text-on-surface-variant">Purpose</p>
+                <p className="text-label-md text-on-surface-variant">{t('patient.appointments.purpose')}</p>
                 <p className="font-bold text-on-surface">{viewTarget.purpose}</p>
               </div>
               {viewTarget.notes && (
                 <div className="bg-surface-container-low rounded-lg p-4 sm:col-span-2">
-                  <p className="text-label-md text-on-surface-variant">Notes</p>
+                  <p className="text-label-md text-on-surface-variant">{t('common.notes')}</p>
                   <p className="font-bold text-on-surface">{viewTarget.notes}</p>
                 </div>
               )}
@@ -261,10 +280,10 @@ export default function Appointments() {
             {viewTarget.status === 'Upcoming' && (
               <div className="flex flex-col sm:flex-row justify-end gap-3">
                 <Button variant="secondary" icon="event_repeat" onClick={() => { setViewTarget(null); openReschedule(viewTarget); }}>
-                  Reschedule
+                  {t('patient.appointments.reschedule')}
                 </Button>
                 <Button variant="danger" icon="event_busy" onClick={() => { setViewTarget(null); setCancelTarget(viewTarget); }}>
-                  Cancel Appointment
+                  {t('patient.appointments.cancelAppointment')}
                 </Button>
               </div>
             )}
@@ -275,12 +294,16 @@ export default function Appointments() {
       <Modal
         open={Boolean(rescheduleTarget)}
         onClose={() => setRescheduleTarget(null)}
-        title={rescheduleTarget ? `Reschedule ${rescheduleTarget.id}` : 'Reschedule'}
+        title={
+          rescheduleTarget
+            ? t('patient.appointments.rescheduleTitle', { id: rescheduleTarget.id })
+            : t('patient.appointments.reschedule')
+        }
         icon="event_repeat"
         footer={
           <>
-            <Button variant="outline" onClick={() => setRescheduleTarget(null)}>Cancel</Button>
-            <Button icon="check" onClick={confirmReschedule}>Confirm Reschedule</Button>
+            <Button variant="outline" onClick={() => setRescheduleTarget(null)}>{t('common.cancel')}</Button>
+            <Button icon="check" onClick={confirmReschedule}>{t('patient.appointments.confirmReschedule')}</Button>
           </>
         }
       >
@@ -292,7 +315,7 @@ export default function Appointments() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface mb-2">Date</label>
+                <label className="block text-label-lg font-semibold text-on-surface mb-2">{t('common.date')}</label>
                 <input
                   type="date"
                   value={form.date}
@@ -302,7 +325,7 @@ export default function Appointments() {
                 />
               </div>
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface mb-2">Time</label>
+                <label className="block text-label-lg font-semibold text-on-surface mb-2">{t('common.time')}</label>
                 <input
                   type="time"
                   value={form.time}
@@ -318,25 +341,26 @@ export default function Appointments() {
       <Modal
         open={Boolean(cancelTarget)}
         onClose={() => setCancelTarget(null)}
-        title="Cancel Appointment"
+        title={t('patient.appointments.cancelAppointment')}
         icon="event_busy"
         size="sm"
         footer={
           <>
-            <Button variant="outline" onClick={() => setCancelTarget(null)}>No, Keep It</Button>
-            <Button variant="danger" icon="event_busy" onClick={confirmCancel}>Yes, Cancel</Button>
+            <Button variant="outline" onClick={() => setCancelTarget(null)}>{t('patient.appointments.noKeepIt')}</Button>
+            <Button variant="danger" icon="event_busy" onClick={confirmCancel}>{t('patient.appointments.yesCancel')}</Button>
           </>
         }
       >
         {cancelTarget && (
           <div className="space-y-3">
             <p className="text-body-md text-on-surface">
-              Are you sure you want to cancel your appointment with{' '}
-              <span className="font-bold">{cancelTarget.doctor}</span> on{' '}
-              <span className="font-bold">{formatDate(`${cancelTarget.date}T00:00:00`, 'EEE, MMM d, yyyy')}</span> at{' '}
-              <span className="font-bold">{formatTime(`${cancelTarget.date}T${cancelTarget.time}:00`, 'h:mm a')}</span>?
+              {t('patient.appointments.cancelConfirm', {
+                doctor: cancelTarget.doctor,
+                date: formatDate(`${cancelTarget.date}T00:00:00`, 'EEE, MMM d, yyyy'),
+                time: formatTime(`${cancelTarget.date}T${cancelTarget.time}:00`, 'h:mm a'),
+              })}
             </p>
-            <p className="text-label-md text-on-surface-variant">This action cannot be undone.</p>
+            <p className="text-label-md text-on-surface-variant">{t('patient.appointments.cannotUndo')}</p>
           </div>
         )}
       </Modal>

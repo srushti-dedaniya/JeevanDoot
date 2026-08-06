@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -21,16 +22,18 @@ import { formatDateTime, formatDuration } from '../../utils/formatDate';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
-    { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
-    { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
-    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library', end: true },
-    { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
+    { labelKey: 'dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'patientQueue', to: '/doctor/queue', icon: 'groups' },
+    { labelKey: 'liveConsultation', to: '/doctor/consultation', icon: 'call' },
+    { labelKey: 'consultationHistory', to: '/doctor/consultation-history', icon: 'video_library', end: true },
+    { labelKey: 'performanceAnalytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
 export default function ConsultationHistory() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
   const [consultations, setConsultations] = useState([]);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState(null);
@@ -60,44 +63,42 @@ export default function ConsultationHistory() {
 
   const handleDownload = (consultation) => {
     downloadConsultationSummaryPDF(consultation);
-    toast.success('Consultation summary PDF downloaded.');
+    toast.success(t('history.summaryPdfDownloaded'));
   };
 
   const handlePrescription = (consultation) => {
     storePrescriptionDraft(consultation);
-    toast.success('Opening prescription editor with consultation data.');
+    toast.success(t('history.openingPrescriptionEditor'));
     navigate('/doctor/prescription');
   };
 
   const handleDelete = (consultation) => {
-    const confirmed = window.confirm(
-      `Delete consultation ${consultation.consultationId}? This cannot be undone.`
-    );
+    const confirmed = window.confirm(t('history.deleteConfirm', { id: consultation.consultationId }));
     if (!confirmed) return;
     const result = deleteConsultation(consultation.consultationId);
     if (result.success) {
-      toast.success('Consultation deleted.');
+      toast.success(t('history.deleted'));
       setSelected(null);
       loadConsultations();
     } else {
-      toast.error('Could not delete the consultation.');
+      toast.error(t('history.couldNotDelete'));
     }
   };
 
   const handleDeleteRecording = async (id) => {
     const result = await deleteRecording(id);
     if (result.success) {
-      toast.success('Recording deleted.');
+      toast.success(t('consultation.recordingDeleted'));
       setSelectedRecordings((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error('Could not delete the recording.');
+      toast.error(t('consultation.couldNotDeleteRecording'));
     }
   };
 
   const columns = [
     {
       key: 'patientName',
-      header: 'Patient',
+      header: t('history.patient'),
       render: (row) => (
         <div>
           <p className="font-bold text-on-surface">{row.patientName}</p>
@@ -105,12 +106,12 @@ export default function ConsultationHistory() {
         </div>
       ),
     },
-    { key: 'consultationId', header: 'Consultation', render: (row) => <span className="font-mono text-label-md">{row.consultationId}</span> },
-    { key: 'date', header: 'Date', render: (row) => formatDateTime(row.date) },
-    { key: 'duration', header: 'Duration', render: (row) => formatDuration(row.duration || 0) },
+    { key: 'consultationId', header: t('history.consultation'), render: (row) => <span className="font-mono text-label-md">{row.consultationId}</span> },
+    { key: 'date', header: t('common.date'), render: (row) => formatDateTime(row.date) },
+    { key: 'duration', header: t('common.duration'), render: (row) => formatDuration(row.duration || 0) },
     {
       key: 'diagnosis',
-      header: 'Diagnosis',
+      header: t('common.diagnosis'),
       render: (row) =>
         row.diagnosis ? (
           <Badge variant="primary">{row.diagnosis}</Badge>
@@ -120,15 +121,15 @@ export default function ConsultationHistory() {
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('common.actions'),
       render: (row) => (
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => openDetail(row)}
             className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-            title="View summary"
-            aria-label={`View summary for ${row.consultationId}`}
+            title={t('history.viewSummary')}
+            aria-label={t('history.viewSummaryAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">visibility</span>
           </button>
@@ -136,8 +137,8 @@ export default function ConsultationHistory() {
             type="button"
             onClick={() => handleDownload(row)}
             className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-            title="Download PDF"
-            aria-label={`Download summary for ${row.consultationId}`}
+            title={t('prescription.downloadPdf')}
+            aria-label={t('history.downloadAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">download</span>
           </button>
@@ -145,8 +146,8 @@ export default function ConsultationHistory() {
             type="button"
             onClick={() => handlePrescription(row)}
             className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-            title="Generate prescription"
-            aria-label={`Generate prescription for ${row.consultationId}`}
+            title={t('history.generatePrescription')}
+            aria-label={t('history.generatePrescriptionAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">prescriptions</span>
           </button>
@@ -154,8 +155,8 @@ export default function ConsultationHistory() {
             type="button"
             onClick={() => handleDelete(row)}
             className="p-2 rounded-full text-error hover:bg-error-container transition-colors"
-            title="Delete consultation"
-            aria-label={`Delete consultation ${row.consultationId}`}
+            title={t('history.deleteConsultation')}
+            aria-label={t('history.deleteAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">delete</span>
           </button>
@@ -166,18 +167,18 @@ export default function ConsultationHistory() {
 
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Consultation History', subtitle: 'Completed telemedicine sessions' }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('history.title'), subtitle: t('history.subtitle') }}
     >
       <Card
-        title="Past Consultations"
+        title={t('history.pastConsultations')}
         icon="video_library"
-        subtitle={`${consultations.length} completed session${consultations.length === 1 ? '' : 's'}`}
+        subtitle={t('history.completedSessions', { count: consultations.length })}
         headerRight={
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search patient, ID or doctor..."
+            placeholder={t('history.search')}
             icon="search"
             wrapperClassName="w-full md:w-80"
             className="!h-12"
@@ -192,14 +193,14 @@ export default function ConsultationHistory() {
             <div className="text-center py-14">
               <span className="material-symbols-outlined text-5xl text-outline">video_library</span>
               <p className="font-bold text-on-surface mt-3">
-                {query ? 'No consultations match your search.' : 'No consultations yet.'}
+                {query ? t('history.noMatch') : t('history.noneYet')}
               </p>
               <p className="text-on-surface-variant text-label-md mt-1">
-                Completed live consultations will appear here automatically.
+                {t('history.willAppearHere')}
               </p>
               {!query && (
                 <Button className="mt-5" icon="call" onClick={() => navigate('/doctor/consultation')}>
-                  Start a Consultation
+                  {t('history.startConsultation')}
                 </Button>
               )}
             </div>
@@ -210,7 +211,7 @@ export default function ConsultationHistory() {
       <Modal
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        title="Consultation Summary"
+        title={t('history.consultationSummary')}
         icon="fact_check"
         size="lg"
       >
@@ -228,7 +229,7 @@ export default function ConsultationHistory() {
             <div className="flex items-center gap-2 mb-3">
               <span className="material-symbols-outlined text-primary">videocam</span>
               <p className="font-headline text-headline-sm font-bold text-on-surface">
-                Session Recordings
+                {t('history.sessionRecordings')}
               </p>
               <Badge variant="neutral">{selectedRecordings.length}</Badge>
             </div>

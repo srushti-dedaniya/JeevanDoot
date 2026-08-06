@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
-import Badge from '../../components/common/Badge';
 import Table from '../../components/common/Table';
 import { MEDICATION_SUGGESTIONS, COMMON_MEDICINE_SCHEDULES } from '../../utils/constants';
 import {
@@ -17,11 +17,11 @@ import { consumePrescriptionDraft } from '../../utils/consultationUtils';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
-    { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
-    { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
-    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
-    { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
+    { labelKey: 'dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'patientQueue', to: '/doctor/queue', icon: 'groups' },
+    { labelKey: 'liveConsultation', to: '/doctor/consultation', icon: 'call' },
+    { labelKey: 'consultationHistory', to: '/doctor/consultation-history', icon: 'video_library' },
+    { labelKey: 'performanceAnalytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
@@ -41,6 +41,8 @@ const EMPTY_MEDICINE = {
 const nextMedicineId = () => `med-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 export default function PrescriptionWriting() {
+  const { t } = useTranslation();
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
   const [patientId, setPatientId] = useState('JD-9921');
   const [patientName, setPatientName] = useState('Meera Sharma');
   const [medicines, setMedicines] = useState([]);
@@ -62,18 +64,21 @@ export default function PrescriptionWriting() {
       setMedicines(draft.medicines);
     }
     setDraftSource(draft.fromConsultation || null);
-    toast.success('Consultation details loaded — review before saving.');
+    toast.success(t('prescription.consultationLoaded'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const scheduleLabel = (value = {}) =>
-    COMMON_MEDICINE_SCHEDULES.filter((slot) => value[slot.toLowerCase()]).join(', ');
+    COMMON_MEDICINE_SCHEDULES.filter((slot) => value[slot.toLowerCase()])
+      .map((slot) => t(`prescription.${slot.toLowerCase()}`))
+      .join(', ');
 
   const validateMedicineInput = () => {
     const missing = [];
-    if (!current.medicineName.trim()) missing.push('Medicine Name');
-    if (!current.dosage.trim()) missing.push('Dosage');
-    if (!current.frequency.trim()) missing.push('Frequency');
-    if (!current.duration.trim()) missing.push('Duration');
+    if (!current.medicineName.trim()) missing.push(t('prescription.missingMedicineName'));
+    if (!current.dosage.trim()) missing.push(t('prescription.missingDosage'));
+    if (!current.frequency.trim()) missing.push(t('prescription.missingFrequency'));
+    if (!current.duration.trim()) missing.push(t('prescription.missingDuration'));
     return missing;
   };
 
@@ -86,7 +91,7 @@ export default function PrescriptionWriting() {
   const addMedicine = () => {
     const missing = validateMedicineInput();
     if (missing.length > 0) {
-      toast.error(`Cannot add medicine. Missing: ${missing.join(', ')}`);
+      toast.error(t('prescription.cannotAddMissing', { fields: missing.join(', ') }));
       return;
     }
 
@@ -94,10 +99,10 @@ export default function PrescriptionWriting() {
       setMedicines((prev) =>
         prev.map((med) => (med.id === editingId ? { ...med, ...current, schedule } : med))
       );
-      toast.success('Medicine updated.');
+      toast.success(t('prescription.medicineUpdated'));
     } else {
       setMedicines((prev) => [...prev, { id: nextMedicineId(), ...current, schedule }]);
-      toast.success('Medicine added.');
+      toast.success(t('prescription.medicineAdded'));
     }
 
     resetMedicineForm();
@@ -112,15 +117,15 @@ export default function PrescriptionWriting() {
       duration: med.duration,
     });
     setSchedule(med.schedule || DEFAULT_SCHEDULE);
-    toast.success(`Editing: ${med.medicineName}`);
+    toast.success(t('prescription.editing', { name: med.medicineName }));
   };
 
   const removeMedicine = (med) => {
-    const confirmed = window.confirm(`Remove ${med.medicineName} from the prescription?`);
+    const confirmed = window.confirm(t('prescription.removeConfirm', { name: med.medicineName }));
     if (!confirmed) return;
     setMedicines((prev) => prev.filter((m) => m.id !== med.id));
     if (editingId === med.id) resetMedicineForm();
-    toast.success('Medicine removed.');
+    toast.success(t('prescription.medicineRemoved'));
   };
 
   const buildData = () => ({
@@ -134,28 +139,28 @@ export default function PrescriptionWriting() {
   const handleDownload = () => {
     const missingFields = validatePrescription(buildData());
     if (missingFields.length > 0) {
-      toast.error(`Cannot download PDF. Missing: ${missingFields.join(', ')}`);
+      toast.error(t('prescription.cannotDownloadMissing', { fields: missingFields.join(', ') }));
       return;
     }
     downloadPrescriptionPDF(buildData());
-    toast.success('Prescription PDF downloaded.');
+    toast.success(t('prescription.pdfDownloaded'));
   };
 
   const handleSave = () => {
     const result = savePrescription(buildData());
     if (result.success) {
-      toast.success('Prescription saved successfully.');
+      toast.success(t('prescription.savedSuccess'));
     } else if (result.missingFields) {
-      toast.error(`Cannot save prescription. Missing: ${result.missingFields.join(', ')}`);
+      toast.error(t('prescription.cannotSaveMissing', { fields: result.missingFields.join(', ') }));
     } else {
-      toast.error(result.error || 'Could not save the prescription.');
+      toast.error(result.error || t('prescription.couldNotSave'));
     }
   };
 
   const handlePrint = () => {
     const missingFields = validatePrescription(buildData());
     if (missingFields.length > 0) {
-      toast.error(`Cannot print. Missing: ${missingFields.join(', ')}`);
+      toast.error(t('prescription.cannotPrintMissing', { fields: missingFields.join(', ') }));
       return;
     }
     printPrescription(buildData());
@@ -163,66 +168,65 @@ export default function PrescriptionWriting() {
 
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Prescription Writing', subtitle: 'Create a new electronic prescription' }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('prescription.title'), subtitle: t('prescription.subtitle') }}
     >
       {draftSource && (
         <div className="mb-6 flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-xl px-5 py-4">
           <span className="material-symbols-outlined">fact_check</span>
           <p className="font-bold">
-            Prefilled from consultation {draftSource}. Medicines shown are AI recommendations —
-            please review before saving.
+            {t('prescription.prefilledBanner', { id: draftSource })}
           </p>
         </div>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <Card title="Patient Information" icon="person">
+          <Card title={t('prescription.patientInformation')} icon="person">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Patient ID" value={patientId} onChange={(e) => setPatientId(e.target.value)} icon="badge" />
-              <Input label="Patient Name" value={patientName} onChange={(e) => setPatientName(e.target.value)} icon="person" />
+              <Input label={t('prescription.patientId')} value={patientId} onChange={(e) => setPatientId(e.target.value)} icon="badge" />
+              <Input label={t('prescription.patientName')} value={patientName} onChange={(e) => setPatientName(e.target.value)} icon="person" />
             </div>
           </Card>
 
           <Card
-            title={editingId ? 'Edit Medicine' : 'Add Medication'}
+            title={editingId ? t('prescription.editMedicine') : t('prescription.addMedication')}
             icon="medication"
-            subtitle={editingId ? 'Update the medicine details below' : 'Add medicines one at a time'}
+            subtitle={editingId ? t('prescription.updateDetailsBelow') : t('prescription.addOneAtATime')}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
-                label="Medicine Name"
+                label={t('prescription.medicineName')}
                 value={current.medicineName}
                 onChange={(e) => setCurrent((c) => ({ ...c, medicineName: e.target.value }))}
-                placeholder="e.g. Paracetamol"
+                placeholder={t('prescription.placeholderMedicineName')}
                 icon="medication"
               />
               <Input
-                label="Dosage"
+                label={t('prescription.dosage')}
                 value={current.dosage}
                 onChange={(e) => setCurrent((c) => ({ ...c, dosage: e.target.value }))}
-                placeholder="e.g. 500mg"
+                placeholder={t('prescription.placeholderDosage')}
                 icon="edit_note"
               />
               <Input
-                label="Frequency"
+                label={t('prescription.frequency')}
                 value={current.frequency}
                 onChange={(e) => setCurrent((c) => ({ ...c, frequency: e.target.value }))}
-                placeholder="e.g. Twice daily"
+                placeholder={t('prescription.placeholderFrequency')}
                 icon="schedule"
               />
               <Input
-                label="Duration (days)"
+                label={t('prescription.durationDays')}
                 value={current.duration}
                 onChange={(e) => setCurrent((c) => ({ ...c, duration: e.target.value }))}
-                placeholder="e.g. 5"
+                placeholder={t('prescription.placeholderDuration')}
                 type="number"
                 icon="calendar_today"
               />
             </div>
 
             <div className="mt-4">
-              <p className="font-bold text-on-surface mb-2">Schedule</p>
+              <p className="font-bold text-on-surface mb-2">{t('prescription.schedule')}</p>
               <div className="flex flex-wrap gap-3">
                 {COMMON_MEDICINE_SCHEDULES.map((slot) => (
                   <label
@@ -240,7 +244,7 @@ export default function PrescriptionWriting() {
                       onChange={() => setSchedule((s) => ({ ...s, [slot.toLowerCase()]: !s[slot.toLowerCase()] }))}
                     />
                     <span className="material-symbols-outlined text-sm">{schedule[slot.toLowerCase()] ? 'check' : 'add'}</span>
-                    {slot}
+                    {t(`prescription.${slot.toLowerCase()}`)}
                   </label>
                 ))}
               </div>
@@ -262,7 +266,7 @@ export default function PrescriptionWriting() {
               <div className="flex items-center gap-3">
                 {editingId && (
                   <Button type="button" onClick={resetMedicineForm} icon="close" variant="outline">
-                    Cancel
+                    {t('common.cancel')}
                   </Button>
                 )}
                 <Button
@@ -271,7 +275,7 @@ export default function PrescriptionWriting() {
                   icon={editingId ? 'check' : 'add_circle'}
                   variant={editingId ? 'primary' : 'secondary'}
                 >
-                  {editingId ? 'Update Medicine' : 'Add to Prescription'}
+                  {editingId ? t('prescription.updateMedicine') : t('prescription.addToPrescription')}
                 </Button>
               </div>
             </div>
@@ -279,38 +283,38 @@ export default function PrescriptionWriting() {
 
           {medicines.length > 0 && (
             <Card
-              title="Prescription Items"
+              title={t('prescription.prescriptionItems')}
               icon="playlist_add_check"
-              subtitle={`Medicines Added: ${medicines.length}`}
+              subtitle={t('prescription.medicinesAdded', { count: medicines.length })}
             >
               <Table
                 rowKey="id"
                 data={medicines}
                 columns={[
-                  { key: 'medicineName', header: 'Medicine' },
-                  { key: 'dosage', header: 'Dosage' },
-                  { key: 'frequency', header: 'Frequency' },
+                  { key: 'medicineName', header: t('prescription.medicine') },
+                  { key: 'dosage', header: t('prescription.dosage') },
+                  { key: 'frequency', header: t('prescription.frequency') },
                   {
                     key: 'duration',
-                    header: 'Duration',
-                    render: (row) => `${row.duration} days`,
+                    header: t('common.duration'),
+                    render: (row) => t('prescription.durationValue', { count: row.duration }),
                   },
                   {
                     key: 'schedule',
-                    header: 'Schedule',
+                    header: t('prescription.schedule'),
                     render: (row) => scheduleLabel(row.schedule) || '—',
                   },
                   {
                     key: 'actions',
-                    header: 'Actions',
+                    header: t('common.actions'),
                     render: (row) => (
                       <div className="flex items-center gap-1">
                         <button
                           type="button"
                           onClick={() => startEdit(row)}
                           className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-                          aria-label={`Edit ${row.medicineName}`}
-                          title="Edit medicine"
+                          aria-label={t('prescription.editAria', { name: row.medicineName })}
+                          title={t('prescription.editTitle')}
                         >
                           <span className="material-symbols-outlined text-lg">edit</span>
                         </button>
@@ -318,8 +322,8 @@ export default function PrescriptionWriting() {
                           type="button"
                           onClick={() => removeMedicine(row)}
                           className="p-2 rounded-full text-error hover:bg-error-container transition-colors"
-                          aria-label={`Delete ${row.medicineName}`}
-                          title="Delete medicine"
+                          aria-label={t('prescription.deleteAria', { name: row.medicineName })}
+                          title={t('prescription.deleteTitle')}
                         >
                           <span className="material-symbols-outlined text-lg">delete</span>
                         </button>
@@ -331,22 +335,22 @@ export default function PrescriptionWriting() {
             </Card>
           )}
 
-          <Card title="Diagnosis & Advice" icon="stethoscope">
+          <Card title={t('prescription.diagnosisAdvice')} icon="stethoscope">
             <div className="space-y-4">
               <Input
-                label="Diagnosis"
+                label={t('prescription.diagnosis')}
                 value={diagnosis}
                 onChange={(e) => setDiagnosis(e.target.value)}
-                placeholder="e.g. Hypertension (Stage 1)"
+                placeholder={t('prescription.placeholderDiagnosis')}
                 icon="diagnosis"
               />
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">Advice for Patient</label>
+                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">{t('prescription.adviceForPatient')}</label>
                 <textarea
                   value={advice}
                   onChange={(e) => setAdvice(e.target.value)}
                   rows={3}
-                  placeholder="Diet, rest, follow-up notes..."
+                  placeholder={t('prescription.advicePlaceholder')}
                   className="w-full px-4 py-3 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
@@ -355,19 +359,19 @@ export default function PrescriptionWriting() {
         </div>
 
         <div className="space-y-6">
-          <Card title="Actions" icon="bolt">
+          <Card title={t('common.actions')} icon="bolt">
             <div className="space-y-3">
               <p className="text-label-lg font-bold text-primary">
-                Medicines Added: <Badge variant="primary">{medicines.length}</Badge>
+                {t('prescription.medicinesAdded', { count: medicines.length })}
               </p>
               <Button
                 fullWidth
                 onClick={handleSave}
                 icon="save"
                 disabled={medicines.length === 0}
-                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+                title={medicines.length === 0 ? t('prescription.addAtLeastOne') : undefined}
               >
-                Save Prescription
+                {t('prescription.savePrescription')}
               </Button>
               <Button
                 fullWidth
@@ -375,9 +379,9 @@ export default function PrescriptionWriting() {
                 onClick={handleDownload}
                 icon="download"
                 disabled={medicines.length === 0}
-                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+                title={medicines.length === 0 ? t('prescription.addAtLeastOne') : undefined}
               >
-                Download PDF
+                {t('prescription.downloadPdf')}
               </Button>
               <Button
                 fullWidth
@@ -385,18 +389,18 @@ export default function PrescriptionWriting() {
                 onClick={handlePrint}
                 icon="print"
                 disabled={medicines.length === 0}
-                title={medicines.length === 0 ? 'Add at least one medicine first' : undefined}
+                title={medicines.length === 0 ? t('prescription.addAtLeastOne') : undefined}
               >
-                Print
+                {t('common.print')}
               </Button>
             </div>
           </Card>
-          <Card title="Quick Reference" icon="tips_and_updates">
+          <Card title={t('prescription.quickReference')} icon="tips_and_updates">
             <ul className="space-y-2 text-label-md text-on-surface-variant">
-              <li>• Add multiple medicines to the same prescription.</li>
-              <li>• Edit or remove any medicine before saving.</li>
-              <li>• E-prescriptions are digitally signed by JeevanDoot.</li>
-              <li>• Schedule reminders auto-sync to patient phone.</li>
+              <li>{t('prescription.quickRef1')}</li>
+              <li>{t('prescription.quickRef2')}</li>
+              <li>{t('prescription.quickRef3')}</li>
+              <li>{t('prescription.quickRef4')}</li>
             </ul>
           </Card>
         </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
@@ -12,16 +13,6 @@ import { NGO_NAV } from './ngoNav';
 
 const CAMPAIGNS = ['Malaria Prevention', 'Maternal Health', 'Nutrition Drive', 'Clean Water & Sanitation', 'Vaccination Support'];
 
-const DONATION_STATUSES = ['Pending', 'Received'];
-
-const EXPORT_PERIODS = [
-  { value: '1', label: 'Last 1 month' },
-  { value: '3', label: 'Last 3 months' },
-  { value: '6', label: 'Last 6 months' },
-  { value: '12', label: 'Last 12 months' },
-  { value: 'all', label: 'All time' },
-];
-
 const daysAgo = (n) => {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -30,6 +21,7 @@ const daysAgo = (n) => {
 
 export default function Donations() {
   const { notify } = useNotification();
+  const { t } = useTranslation();
   const [donations, setDonations] = useState([
     { id: 'D-2210', donor: 'Seva Foundation', amount: 250000, campaign: 'Malaria Prevention', date: daysAgo(5), status: 'Received' },
     { id: 'D-2209', donor: 'Rotary Club', amount: 120000, campaign: 'Maternal Health', date: daysAgo(24), status: 'Received' },
@@ -40,6 +32,23 @@ export default function Donations() {
   const [query, setQuery] = useState('');
   const [exportMonths, setExportMonths] = useState('12');
   const [form, setForm] = useState({ donor: '', amount: '', campaign: CAMPAIGNS[0] });
+
+  const DONATION_STATUSES = ['Pending', 'Received'];
+
+  const EXPORT_PERIODS = [
+    { value: '1', labelKey: 'exportLast1' },
+    { value: '3', labelKey: 'exportLast3' },
+    { value: '6', labelKey: 'exportLast6' },
+    { value: '12', labelKey: 'exportLast12' },
+    { value: 'all', labelKey: 'exportAll' },
+  ];
+
+  const STATUS_LABELS = {
+    Pending: t('common.pending'),
+    Received: t('ngo.donations.received'),
+  };
+
+  const sidebarItems = NGO_NAV.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
 
   const totalReceived = donations
     .filter((d) => d.status === 'Received')
@@ -60,7 +69,7 @@ export default function Donations() {
     setDonations((prev) =>
       prev.map((d) => (d.id === id ? { ...d, status } : d))
     );
-    notify({ type: 'success', message: `Donation ${donation.id} marked as ${status}` });
+    notify({ type: 'success', message: t('ngo.donations.markedAs', { id: donation.id, status: STATUS_LABELS[status] }) });
   };
 
   const handleSubmit = (e) => {
@@ -69,7 +78,7 @@ export default function Donations() {
     setDonations((prev) => [entry, ...prev]);
     setShowForm(false);
     setForm({ donor: '', amount: '', campaign: CAMPAIGNS[0] });
-    notify({ type: 'success', message: `Donation ${entry.id} recorded` });
+    notify({ type: 'success', message: t('ngo.donations.added', { id: entry.id }) });
   };
 
   const inExportWindow = (date) => {
@@ -91,70 +100,70 @@ export default function Donations() {
         d.status,
       ]);
     downloadCSV('donations.csv', ['ID', 'Donor', 'Campaign', 'Amount (INR)', 'Date', 'Status'], rows);
-    notify({ type: 'success', message: `${rows.length} donation${rows.length === 1 ? '' : 's'} exported to CSV` });
+    notify({ type: 'success', message: t('ngo.donations.exported', { count: rows.length }) });
   };
 
   return (
     <DashboardLayout
-      sidebarProps={NGO_NAV}
+      sidebarProps={{ items: sidebarItems }}
       headerProps={{
-        title: 'Donations',
-        subtitle: 'Funds received for community programs',
+        title: t('ngo.donations.title'),
+        subtitle: t('ngo.donations.subtitle'),
         right: (
           <>
             <div className="flex items-center gap-3">
-              <span className="text-label-md text-on-surface-variant whitespace-nowrap">Export</span>
+              <span className="text-label-md text-on-surface-variant whitespace-nowrap">{t('common.export')}</span>
               <select
                 value={exportMonths}
                 onChange={(e) => setExportMonths(e.target.value)}
                 className="h-11 bg-surface-container-low border border-outline-variant rounded-lg px-3 text-label-md focus:ring-2 focus:ring-primary"
-                aria-label="Export period"
+                aria-label={t('ngo.donations.exportPeriodAria')}
               >
                 {EXPORT_PERIODS.map((period) => (
-                  <option key={period.value} value={period.value}>{period.label}</option>
+                  <option key={period.value} value={period.value}>{t(`ngo.donations.${period.labelKey}`)}</option>
                 ))}
               </select>
-              <Button variant="outline" icon="download" onClick={handleExport}>Download CSV</Button>
+              <Button variant="outline" icon="download" onClick={handleExport}>{t('ngo.donations.downloadCsv')}</Button>
             </div>
-            <Button icon="add" onClick={() => setShowForm(true)}>Record Donation</Button>
+            <Button icon="add" onClick={() => setShowForm(true)}>{t('ngo.donations.recordDonation')}</Button>
           </>
         ),
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-        <KPIWidget label="Total Collected" value={formatAmount(totalReceived)} icon="payments" color="primary" trend={15} />
-        <KPIWidget label="Annual Goal" value="₹25,00,000" icon="flag" color="secondary" sublabel="64% of target reached" />
-        <KPIWidget label="Active Campaigns" value={CAMPAIGNS.length} icon="campaign" color="tertiary" sublabel="Across 7 villages" />
+        <KPIWidget label={t('ngo.donations.totalCollected')} value={formatAmount(totalReceived)} icon="payments" color="primary" trend={15} />
+        <KPIWidget label={t('ngo.donations.annualGoal')} value="₹25,00,000" icon="flag" color="secondary" sublabel={t('ngo.donations.targetReached', { value: 64 })} />
+        <KPIWidget label={t('ngo.donations.activeCampaigns')} value={CAMPAIGNS.length} icon="campaign" color="tertiary" sublabel={t('ngo.donations.acrossVillages', { count: 7 })} />
       </div>
 
       {showForm && (
         <form onSubmit={handleSubmit}>
-          <Card title="Record a Donation" icon="volunteer_activism">
+          <Card title={t('ngo.donations.formTitle')} icon="volunteer_activism">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">Donor</label>
+                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">{t('ngo.donations.donor')}</label>
                 <input
                   value={form.donor}
                   onChange={(e) => setForm((f) => ({ ...f, donor: e.target.value }))}
-                  placeholder="Organization / individual"
+                  placeholder={t('ngo.donations.donorPlaceholder')}
                   required
                   className="w-full h-14 px-4 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">Amount (₹)</label>
+                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">{t('ngo.donations.amountLabel')}</label>
                 <input
                   type="number"
                   min="0"
                   value={form.amount}
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                  placeholder="e.g. 50000"
+                  placeholder={t('ngo.donations.amountPlaceholder')}
                   required
                   className="w-full h-14 px-4 bg-surface-container-low border border-outline-variant rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
               <div>
-                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">Campaign</label>
+                <label className="block text-label-lg font-semibold text-on-surface ml-1 mb-2">{t('ngo.donations.campaign')}</label>
                 <select
                   value={form.campaign}
                   onChange={(e) => setForm((f) => ({ ...f, campaign: e.target.value }))}
@@ -167,32 +176,32 @@ export default function Donations() {
               </div>
             </div>
             <div className="flex gap-3 mt-6">
-              <Button type="submit" icon="save">Save Donation</Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+              <Button type="submit" icon="save">{t('ngo.donations.saveDonation')}</Button>
+              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>{t('common.cancel')}</Button>
             </div>
           </Card>
         </form>
       )}
 
       <Card
-        title="Donation Tracker"
-        subtitle={`${filtered.length} donations recorded`}
-        headerRight={<SearchBar placeholder="Search donor or campaign..." onSearch={setQuery} containerClassName="w-64" />}
+        title={t('ngo.donations.tracker')}
+        subtitle={t('ngo.donations.recorded', { count: filtered.length })}
+        headerRight={<SearchBar placeholder={t('ngo.donations.searchPlaceholder')} onSearch={setQuery} containerClassName="w-64" />}
       >
         {filtered.length === 0 ? (
-          <p className="text-center text-on-surface-variant py-12">No donations match your search.</p>
+          <p className="text-center text-on-surface-variant py-12">{t('ngo.donations.empty')}</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-primary text-on-primary">
-                  <th className="px-6 py-3 font-headline font-semibold">ID</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Donor</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Campaign</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Amount</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Date</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Status</th>
-                  <th className="px-6 py-3 font-headline font-semibold">Action</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('common.id')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('ngo.donations.donor')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('ngo.donations.campaign')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('ngo.donations.amount')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('common.date')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('common.status')}</th>
+                  <th className="px-6 py-3 font-headline font-semibold">{t('ngo.donations.action')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -204,17 +213,17 @@ export default function Donations() {
                     <td className="px-6 py-4 font-semibold text-primary">{formatAmount(d.amount)}</td>
                     <td className="px-6 py-4 text-on-surface-variant">{formatDate(d.date, 'MMM d, yyyy')}</td>
                     <td className="px-6 py-4">
-                      <Badge variant={d.status === 'Received' ? 'success' : 'warning'} dot>{d.status}</Badge>
+                      <Badge variant={d.status === 'Received' ? 'success' : 'warning'} dot>{STATUS_LABELS[d.status]}</Badge>
                     </td>
                     <td className="px-6 py-4">
                       <select
                         value={d.status}
                         onChange={(e) => changeStatus(d.id, e.target.value)}
                         className="bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-label-md focus:ring-2 focus:ring-primary"
-                        aria-label={`Update status for donation ${d.id}`}
+                        aria-label={t('ngo.donations.updateStatusAria', { id: d.id })}
                       >
                         {DONATION_STATUSES.map((status) => (
-                          <option key={status} value={status}>{status}</option>
+                          <option key={status} value={status}>{STATUS_LABELS[status]}</option>
                         ))}
                       </select>
                     </td>

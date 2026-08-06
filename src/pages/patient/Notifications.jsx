@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import PatientSidebar from '../../components/layout/PatientSidebar';
 import Card from '../../components/common/Card';
@@ -69,6 +70,7 @@ const loadNotifications = () => {
 };
 
 export default function Notifications() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState(loadNotifications);
   const [filter, setFilter] = useState('All');
 
@@ -84,36 +86,42 @@ export default function Notifications() {
 
   const markAsRead = (id) => {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-    toast.success('Notification marked as read.');
+    toast.success(t('patient.notifications.markedRead'));
   };
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    toast.success('All notifications marked as read.');
+    toast.success(t('patient.notifications.allMarkedRead'));
   };
 
   const removeNotification = (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
-    toast.success('Notification deleted.');
+    toast.success(t('patient.notifications.deleted'));
   };
 
   const filtered = filter === 'Unread' ? notifications.filter((n) => !n.read) : notifications;
 
-  const filters = ['All', 'Unread'];
+  const filters = [
+    { key: 'All', labelKey: 'filterAll' },
+    { key: 'Unread', labelKey: 'filterUnread' },
+  ];
 
   return (
     <DashboardLayout
       sidebar={<PatientSidebar />}
-      headerProps={{ title: 'Notifications', subtitle: 'Updates and alerts' }}
+      headerProps={{ title: t('patient.notifications.title'), subtitle: t('patient.notifications.subtitle') }}
     >
       <Card
-        title="Notifications"
+        title={t('patient.notifications.title')}
         icon="notifications"
-        subtitle={`${notifications.length} notification${notifications.length === 1 ? '' : 's'}`}
+        subtitle={t(
+          notifications.length === 1 ? 'patient.notifications.countOne' : 'patient.notifications.countMany',
+          { count: notifications.length }
+        )}
         headerRight={
           unreadCount > 0 && (
             <Button variant="outline" size="sm" icon="mark_email_read" onClick={markAllRead}>
-              Mark all as read
+              {t('patient.notifications.markAllRead')}
             </Button>
           )
         }
@@ -121,22 +129,22 @@ export default function Notifications() {
         <div className="flex flex-wrap items-center gap-3 mb-4">
           <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-error-container text-on-error-container font-bold text-label-md">
             <span className="material-symbols-outlined text-[16px]">notifications</span>
-            {unreadCount} unread
+            {t('patient.notifications.unread', { count: unreadCount })}
           </span>
           <div className="flex items-center gap-2">
             {filters.map((f) => (
               <button
-                key={f}
+                key={f.key}
                 type="button"
-                onClick={() => setFilter(f)}
+                onClick={() => setFilter(f.key)}
                 className={cx(
                   'px-3 py-1.5 rounded-full text-label-md font-bold transition-colors',
-                  filter === f
+                  filter === f.key
                     ? 'bg-primary text-on-primary'
                     : 'bg-surface-container-low text-on-surface-variant hover:bg-surface-container-high'
                 )}
               >
-                {f}
+                {t(`patient.notifications.${f.labelKey}`)}
               </button>
             ))}
           </div>
@@ -146,10 +154,10 @@ export default function Notifications() {
           <div className="text-center py-14">
             <span className="material-symbols-outlined text-5xl text-outline">notifications_off</span>
             <p className="font-bold text-on-surface mt-3">
-              {filter === 'Unread' ? 'No unread notifications.' : 'No notifications yet.'}
+              {filter === 'Unread' ? t('patient.notifications.noUnread') : t('patient.notifications.noneYet')}
             </p>
             <p className="text-on-surface-variant text-label-md mt-1">
-              You are all caught up.
+              {t('patient.notifications.allCaughtUp')}
             </p>
           </div>
         ) : (
@@ -176,7 +184,9 @@ export default function Notifications() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className={cx('text-on-surface', n.read ? 'font-semibold' : 'font-bold')}>{n.title}</p>
-                      {!n.read && <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" aria-label="Unread" />}
+                      {!n.read && (
+                        <span className="w-2.5 h-2.5 rounded-full bg-primary shrink-0" aria-label={t('patient.notifications.unreadAria')} />
+                      )}
                     </div>
                     <p className="text-on-surface-variant text-body-md mt-0.5">{n.message}</p>
                     <p className="text-label-sm text-on-surface-variant/80 mt-1">{n.time}</p>
@@ -188,8 +198,8 @@ export default function Notifications() {
                         type="button"
                         onClick={() => markAsRead(n.id)}
                         className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-                        title="Mark as read"
-                        aria-label={`Mark as read: ${n.title}`}
+                        title={t('patient.notifications.markAsRead')}
+                        aria-label={t('patient.notifications.markAsReadAria', { title: n.title })}
                       >
                         <span className="material-symbols-outlined text-lg">check</span>
                       </button>
@@ -198,8 +208,8 @@ export default function Notifications() {
                       type="button"
                       onClick={() => removeNotification(n.id)}
                       className="p-2 rounded-full text-error hover:bg-error-container transition-colors"
-                      title="Delete"
-                      aria-label={`Delete: ${n.title}`}
+                      title={t('patient.notifications.delete')}
+                      aria-label={t('patient.notifications.deleteAria', { title: n.title })}
                     >
                       <span className="material-symbols-outlined text-lg">delete</span>
                     </button>

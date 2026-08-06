@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -10,22 +11,23 @@ import { doctorService } from '../../services/doctorService';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
-    { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
-    { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
-    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
-    { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
+    { labelKey: 'dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'patientQueue', to: '/doctor/queue', icon: 'groups' },
+    { labelKey: 'liveConsultation', to: '/doctor/consultation', icon: 'call' },
+    { labelKey: 'consultationHistory', to: '/doctor/consultation-history', icon: 'video_library' },
+    { labelKey: 'performanceAnalytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
-const HEATMAP_ROWS = [
-  { label: 'General', values: [1, 2, 3, 2, 1, 0, 0] },
-  { label: 'Prenatal', values: [0, 1, 2, 2, 3, 1, 0] },
-  { label: 'Vaccination', values: [2, 2, 1, 0, 1, 3, 2] },
-  { label: 'Chronic', values: [3, 2, 2, 1, 2, 1, 1] },
-];
-
 export default function DoctorPerformance() {
+  const { t } = useTranslation();
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+  const HEATMAP_ROWS = [
+    { label: t('performance.general'), values: [1, 2, 3, 2, 1, 0, 0] },
+    { label: t('performance.prenatal'), values: [0, 1, 2, 2, 3, 1, 0] },
+    { label: t('performance.vaccination'), values: [2, 2, 1, 0, 1, 3, 2] },
+    { label: t('performance.chronic'), values: [3, 2, 2, 1, 2, 1, 1] },
+  ];
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
@@ -37,16 +39,16 @@ export default function DoctorPerformance() {
   }, []);
 
   const achievements = [
-    { label: '95% resolution rate', icon: 'verified', done: true },
-    { label: '1300 patients served', icon: 'group', done: true },
-    { label: 'Top 10% response time', icon: 'timer', done: true },
-    { label: '100 virtual consults', icon: 'videocam', done: false },
+    { label: t('performance.ach1'), icon: 'verified', done: true },
+    { label: t('performance.ach2'), icon: 'group', done: true },
+    { label: t('performance.ach3'), icon: 'timer', done: true },
+    { label: t('performance.ach4'), icon: 'videocam', done: false },
   ];
 
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Performance Analytics', subtitle: 'Your impact at a glance' }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('performance.title'), subtitle: t('performance.subtitle') }}
     >
       {!stats ? (
         <div className="flex justify-center py-20">
@@ -55,19 +57,19 @@ export default function DoctorPerformance() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <KPIWidget label="Total Patients" value={stats.totalPatients.toLocaleString()} icon="group" color="primary" trend={8} />
-            <KPIWidget label="Resolution Rate" value="92%" icon="verified" color="secondary" trend={3} />
-            <KPIWidget label="Avg Consult Time" value="18m" icon="timer" color="tertiary" trend={-5} />
-            <KPIWidget label="Patient Satisfaction" value="4.8/5" icon="star" color="error" trend={2} />
+            <KPIWidget label={t('performance.totalPatients')} value={stats.totalPatients.toLocaleString()} icon="group" color="primary" trend={8} />
+            <KPIWidget label={t('performance.resolutionRate')} value="92%" icon="verified" color="secondary" trend={3} />
+            <KPIWidget label={t('performance.avgConsultTime')} value="18m" icon="timer" color="tertiary" trend={-5} />
+            <KPIWidget label={t('performance.patientSatisfaction')} value="4.8/5" icon="star" color="error" trend={2} />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card title="Weekly Consultations" subtitle="Trend over the last week">
-              <LineChart labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']} data={stats.consultations} height={280} />
+            <Card title={t('performance.weeklyConsultations')} subtitle={t('performance.trendLastWeek')}>
+              <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats.consultations} height={280} />
             </Card>
-            <Card title="Consultations by Type" subtitle="Distribution across care types">
+            <Card title={t('performance.byType')} subtitle={t('performance.typeDistribution')}>
               <BarChart
-                labels={['General', 'Prenatal', 'Vaccination', 'Chronic', 'Emergency']}
+                labels={[t('performance.general'), t('performance.prenatal'), t('performance.vaccination'), t('performance.chronic'), t('performance.emergency')]}
                 data={[140, 95, 120, 80, 45]}
                 colors={['#1B5E4F', '#E8734A', '#7C5800', '#00639B', '#BA1A1A']}
                 height={280}
@@ -76,10 +78,10 @@ export default function DoctorPerformance() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card title="Service Coverage" subtitle="Visits by type per weekday" className="lg:col-span-2">
+            <Card title={t('performance.serviceCoverage')} subtitle={t('performance.visitsPerWeekday')} className="lg:col-span-2">
               <HeatMap rows={HEATMAP_ROWS} />
             </Card>
-            <Card title="Achievements" icon="emoji_events" subtitle="This quarter">
+            <Card title={t('performance.achievements')} icon="emoji_events" subtitle={t('performance.thisQuarter')}>
               <div className="space-y-3">
                 {achievements.map((a) => (
                   <div key={a.label} className="flex items-center gap-3 bg-surface-container-low rounded-lg p-3">
@@ -91,7 +93,7 @@ export default function DoctorPerformance() {
                       <span className="material-symbols-outlined">{a.icon}</span>
                     </span>
                     <p className={`flex-1 font-medium ${a.done ? 'text-on-surface' : 'text-on-surface-variant'}`}>{a.label}</p>
-                    <Badge variant={a.done ? 'success' : 'neutral'}>{a.done ? 'Earned' : 'Pending'}</Badge>
+                    <Badge variant={a.done ? 'success' : 'neutral'}>{a.done ? t('performance.earned') : t('performance.pending')}</Badge>
                   </div>
                 ))}
               </div>

@@ -28,6 +28,8 @@ export default function NGODashboard() {
   const { user } = useAuth();
   const { t } = useTranslation();
 
+  const sidebarItems = NGO_NAV.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+
   const headerRight = (
     <>
       <NotificationBell />
@@ -37,7 +39,7 @@ export default function NGODashboard() {
 
   return (
     <DashboardLayout
-      sidebarProps={NGO_NAV}
+      sidebarProps={{ items: sidebarItems }}
       headerProps={{
         title: t('ngo.welcomeBack', { name: user?.name ?? t('role.ngo') }),
         subtitle: t('ngo.overviewToday'),
@@ -64,7 +66,7 @@ export default function NGODashboard() {
           }
         >
           <LineChart
-            labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), 'Sat', 'Sun']}
+            labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('ngo.sat'), t('ngo.sun')]}
             data={[1200, 1450, 1320, 1680, 1540, 980, 760]}
             height={280}
           />

@@ -6,17 +6,27 @@ import LineChart from '../../components/charts/LineChart';
 import PieChart from '../../components/charts/PieChart';
 import { useNotification } from '../../hooks/useNotification';
 import { downloadImpactReportPDF } from '../../utils/pdfUtils';
+import { useTranslation } from 'react-i18next';
 import { NGO_NAV } from './ngoNav';
-
-const IMPACT_STATS = [
-  { label: 'Patients Reached', value: '18,420', icon: 'group', note: 'This year' },
-  { label: 'Villages Covered', value: '27', icon: 'location_on', note: 'Across the block' },
-  { label: 'Vaccinations', value: '9,310', icon: 'vaccines', note: 'Drive completion 94%' },
-  { label: 'Training Sessions', value: '84', icon: 'school', note: 'For volunteers & staff' },
-];
 
 export default function ImpactReports() {
   const { notify } = useNotification();
+  const { t } = useTranslation();
+
+  const IMPACT_STATS = [
+    { labelKey: 'patientsReached', label: 'Patients Reached', value: '18,420', icon: 'group', noteKey: 'thisYear', note: 'This year' },
+    { labelKey: 'villagesCovered', label: 'Villages Covered', value: '27', icon: 'location_on', noteKey: 'acrossBlock', note: 'Across the block' },
+    { labelKey: 'vaccinations', label: 'Vaccinations', value: '9,310', icon: 'vaccines', noteKey: 'driveCompletion', note: 'Drive completion 94%' },
+    { labelKey: 'trainingSessions', label: 'Training Sessions', value: '84', icon: 'school', noteKey: 'forVolunteers', note: 'For volunteers & staff' },
+  ];
+
+  const sidebarItems = NGO_NAV.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+
+  const stats = IMPACT_STATS.map((stat) => ({
+    ...stat,
+    label: t(`ngo.impact.${stat.labelKey}`),
+    note: t(`ngo.impact.${stat.noteKey}`),
+  }));
 
   const handleExport = () => {
     downloadImpactReportPDF({
@@ -38,20 +48,20 @@ export default function ImpactReports() {
         'New partner signed: Amroli General Hospital',
       ],
     });
-    notify({ type: 'success', message: 'Impact report exported as PDF' });
+    notify({ type: 'success', message: t('ngo.impact.exported') });
   };
 
   return (
     <DashboardLayout
-      sidebarProps={NGO_NAV}
+      sidebarProps={{ items: sidebarItems }}
       headerProps={{
-        title: 'Impact Reports',
-        subtitle: 'Community outreach performance summary',
-        right: <Button variant="outline" icon="download" onClick={handleExport}>Export Report</Button>,
+        title: t('ngo.impact.title'),
+        subtitle: t('ngo.impact.subtitle'),
+        right: <Button variant="outline" icon="download" onClick={handleExport}>{t('ngo.impact.export')}</Button>,
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        {IMPACT_STATS.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="bg-surface-container-lowest rounded-2xl p-6 card-shadow flex flex-col gap-3">
             <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
               <span className="material-symbols-outlined">{stat.icon}</span>
@@ -66,7 +76,7 @@ export default function ImpactReports() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="Outreach Growth" subtitle="Beneficiaries per quarter" className="lg:col-span-2">
+        <Card title={t('ngo.impact.outreachGrowth')} subtitle={t('ngo.impact.beneficiariesPerQuarter')} className="lg:col-span-2">
           <LineChart
             labels={['Q1', 'Q2', 'Q3', 'Q4']}
             data={[2800, 4100, 5600, 5900]}
@@ -74,15 +84,15 @@ export default function ImpactReports() {
           />
         </Card>
 
-        <Card title="Service Split" subtitle="Share of activities delivered">
+        <Card title={t('ngo.impact.serviceSplit')} subtitle={t('ngo.impact.shareOfActivities')}>
           <PieChart
-            labels={['Primary Care', 'Vaccination', 'Awareness', 'Follow-up']}
+            labels={[t('ngo.primaryCare'), t('ngo.vaccination'), t('ngo.awareness'), t('ngo.followUp')]}
             data={[42, 28, 20, 10]}
             colors={['#1B5E4F', '#C8B900', '#E8734A', '#7B61B5']}
             height={180}
           />
           <div className="flex flex-wrap gap-2 mt-4">
-            {['Primary Care', 'Vaccination', 'Awareness', 'Follow-up'].map((label, i) => (
+            {[t('ngo.primaryCare'), t('ngo.vaccination'), t('ngo.awareness'), t('ngo.followUp')].map((label, i) => (
               <Badge key={label} variant={['success', 'warning', 'critical', 'neutral'][i]}>
                 {label}
               </Badge>
@@ -91,7 +101,7 @@ export default function ImpactReports() {
         </Card>
       </div>
 
-      <Card title="Recent Activity" icon="history" subtitle="Latest milestones from the field">
+      <Card title={t('ngo.impact.recentActivity')} icon="history" subtitle={t('ngo.impact.latestMilestones')}>
         <div className="space-y-4">
           {[
             { text: 'Completed 500-bed mosquito net distribution in Amroli', time: '2 hours ago', tag: 'Distribution' },

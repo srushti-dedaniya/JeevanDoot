@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import PatientSidebar from '../../components/layout/PatientSidebar';
 import Card from '../../components/common/Card';
@@ -106,7 +107,15 @@ const FLAG_VARIANT = {
   Critical: 'critical',
 };
 
+const FLAG_LABEL_KEY = {
+  Normal: 'flagNormal',
+  High: 'flagHigh',
+  Low: 'flagLow',
+  Critical: 'flagCritical',
+};
+
 export default function Reports() {
+  const { t } = useTranslation();
   const { patient } = usePatient();
   const [selected, setSelected] = useState(null);
 
@@ -114,13 +123,15 @@ export default function Reports() {
 
   const handleDownload = (report) => {
     downloadReportPDF({ ...report, patientId: patient.patientId, patientName: patient.name });
-    toast.success('Report PDF downloaded.');
+    toast.success(t('patient.reports.pdfDownloaded'));
   };
+
+  const statusLabel = (status) => (status === 'Completed' ? t('common.completed') : t('common.pending'));
 
   return (
     <DashboardLayout
       sidebar={<PatientSidebar />}
-      headerProps={{ title: 'Reports', subtitle: 'Lab reports and test results' }}
+      headerProps={{ title: t('patient.reports.title'), subtitle: t('patient.reports.subtitle') }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {SAMPLE_REPORTS.map((report) => {
@@ -131,7 +142,7 @@ export default function Reports() {
                 <span className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${meta.color}`}>
                   <span className="material-symbols-outlined text-[28px]">{meta.icon}</span>
                 </span>
-                <Badge variant="success">{report.status}</Badge>
+                <Badge variant="success">{statusLabel(report.status)}</Badge>
               </div>
 
               <h3 className="font-headline text-title-md font-bold text-on-surface mt-4">{report.title}</h3>
@@ -154,10 +165,10 @@ export default function Reports() {
 
               <div className="mt-auto pt-5 flex flex-row gap-3">
                 <Button variant="outline" icon="visibility" fullWidth onClick={() => handleView(report)}>
-                  View
+                  {t('common.view')}
                 </Button>
                 <Button variant="secondary" icon="download" fullWidth onClick={() => handleDownload(report)}>
-                  Download
+                  {t('common.download')}
                 </Button>
               </div>
             </Card>
@@ -168,13 +179,13 @@ export default function Reports() {
       <Modal
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        title={selected ? selected.title : 'Report'}
+        title={selected ? selected.title : t('patient.reports.report')}
         icon="description"
         size="lg"
         footer={
           selected && (
             <Button icon="download" onClick={() => handleDownload(selected)}>
-              Download PDF
+              {t('patient.reports.downloadPdf')}
             </Button>
           )
         }
@@ -183,21 +194,23 @@ export default function Reports() {
           <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-surface-container-low rounded-lg p-4">
               <div>
-                <p className="font-headline text-title-md font-bold text-on-surface">{selected.type} Report</p>
+                <p className="font-headline text-title-md font-bold text-on-surface">
+                  {t('patient.reports.reportType', { type: selected.type })}
+                </p>
                 <p className="text-on-surface-variant text-label-md">
                   {selected.id} · {new Date(selected.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
-              <Badge variant="success">{selected.status}</Badge>
+              <Badge variant="success">{statusLabel(selected.status)}</Badge>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-surface-container-low rounded-lg p-4">
-                <p className="text-label-md text-on-surface-variant">Facility</p>
+                <p className="text-label-md text-on-surface-variant">{t('patient.reports.facility')}</p>
                 <p className="font-bold text-on-surface">{selected.facility}</p>
               </div>
               <div className="bg-surface-container-low rounded-lg p-4">
-                <p className="text-label-md text-on-surface-variant">Authorized By</p>
+                <p className="text-label-md text-on-surface-variant">{t('patient.reports.authorizedBy')}</p>
                 <p className="font-bold text-on-surface">{selected.doctor}</p>
               </div>
             </div>
@@ -207,10 +220,10 @@ export default function Reports() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-primary text-on-primary">
-                      <th className="px-4 py-3 font-headline font-semibold">Test</th>
-                      <th className="px-4 py-3 font-headline font-semibold">Result</th>
-                      <th className="px-4 py-3 font-headline font-semibold">Reference</th>
-                      <th className="px-4 py-3 font-headline font-semibold">Flag</th>
+                      <th className="px-4 py-3 font-headline font-semibold">{t('patient.reports.test')}</th>
+                      <th className="px-4 py-3 font-headline font-semibold">{t('patient.reports.result')}</th>
+                      <th className="px-4 py-3 font-headline font-semibold">{t('patient.reports.reference')}</th>
+                      <th className="px-4 py-3 font-headline font-semibold">{t('patient.reports.flag')}</th>
                     </tr>
                   </thead>
                   <tbody className="text-on-surface">
@@ -220,7 +233,9 @@ export default function Reports() {
                         <td className="px-4 py-3">{field.value} {field.unit}</td>
                         <td className="px-4 py-3 text-on-surface-variant">{field.reference}</td>
                         <td className="px-4 py-3">
-                          <Badge variant={FLAG_VARIANT[field.flag] ?? 'neutral'}>{field.flag}</Badge>
+                          <Badge variant={FLAG_VARIANT[field.flag] ?? 'neutral'}>
+                            {t(`patient.reports.${FLAG_LABEL_KEY[field.flag]}`)}
+                          </Badge>
                         </td>
                       </tr>
                     ))}
@@ -231,7 +246,7 @@ export default function Reports() {
 
             {selected.findings && selected.findings.length > 0 && (
               <div>
-                <p className="font-bold text-on-surface mb-2">Findings</p>
+                <p className="font-bold text-on-surface mb-2">{t('patient.reports.findings')}</p>
                 <ul className="space-y-1.5 text-on-surface-variant">
                   {selected.findings.map((finding, i) => (
                     <li key={i} className="flex items-start gap-2">
@@ -245,7 +260,7 @@ export default function Reports() {
 
             {selected.impression && (
               <div className="bg-primary-container rounded-lg p-4">
-                <p className="font-bold text-on-primary-container mb-1">Impression</p>
+                <p className="font-bold text-on-primary-container mb-1">{t('patient.reports.impression')}</p>
                 <p className="text-sm text-on-primary-container">{selected.impression}</p>
               </div>
             )}

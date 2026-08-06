@@ -173,7 +173,7 @@ export default function LiveConsultation() {
       consultationId: getConsultationId(),
       patientId: patient.id,
       doctorId: user?.id || user?.email || 'doctor',
-      recordingName: sanitizeRecordingName(`${patient.name} consultation`),
+      recordingName: sanitizeRecordingName(t('consultation.recordingName', { name: patient.name })),
       duration,
       recordingDate: new Date().toISOString(),
       videoBlob,

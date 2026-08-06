@@ -88,7 +88,7 @@ export default function DoctorDashboard() {
             </select>
           }
         >
-          <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), 'Sat', 'Sun']} data={stats.consultations} height={280} />
+          <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats.consultations} height={280} />
         </Card>
 
         <Card title={t('doctor.outcomeDistribution')} subtitle={t('doctor.resolvedVsReferred')}>
@@ -166,14 +166,14 @@ export default function DoctorDashboard() {
           <div className="flex items-center gap-4">
             <span className="material-symbols-outlined text-3xl text-on-error-container">emergency</span>
             <div>
-              <h4 className="font-headline font-bold text-on-error-container">High-Risk Alert</h4>
+              <h4 className="font-headline font-bold text-on-error-container">{t('doctor.highRiskAlert')}</h4>
               <p className="text-sm text-on-error-container/80">
-                {highRisk.length} critical patients require immediate attention.
+                {t('doctor.criticalPatientsCount', { count: highRisk.length })}
               </p>
             </div>
           </div>
           <Link to="/doctor/queue">
-            <Button variant="danger">Review Now</Button>
+            <Button variant="danger">{t('doctor.reviewNow')}</Button>
           </Link>
         </div>
       )}

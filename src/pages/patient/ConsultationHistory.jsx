@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import PatientSidebar from '../../components/layout/PatientSidebar';
 import Card from '../../components/common/Card';
@@ -15,6 +16,12 @@ const STATUS_BADGE = {
   Completed: 'success',
   'Follow-up': 'warning',
   Reviewed: 'neutral',
+};
+
+const STATUS_LABEL_KEY = {
+  Completed: 'statusCompleted',
+  'Follow-up': 'statusFollowUp',
+  Reviewed: 'statusReviewed',
 };
 
 const DUMMY_CONSULTATIONS = [
@@ -109,6 +116,7 @@ const DUMMY_CONSULTATIONS = [
 ];
 
 export default function ConsultationHistory() {
+  const { t } = useTranslation();
   const { patient } = usePatient();
   const [selected, setSelected] = useState(null);
 
@@ -129,13 +137,13 @@ export default function ConsultationHistory() {
 
   const handleDownload = (row) => {
     downloadConsultationSummaryPDF(row);
-    toast.success('Consultation summary PDF downloaded.');
+    toast.success(t('patient.consultations.summaryPdfDownloaded'));
   };
 
   const columns = [
     {
       key: 'doctorName',
-      header: 'Doctor',
+      header: t('patient.consultations.doctor'),
       render: (row) => (
         <div>
           <p className="font-bold text-on-surface">{row.doctorName}</p>
@@ -145,7 +153,7 @@ export default function ConsultationHistory() {
     },
     {
       key: 'date',
-      header: 'Date',
+      header: t('common.date'),
       render: (row) => (
         <div>
           <p className="font-bold text-on-surface">{formatDateTime(row.date, 'MMM d, yyyy')}</p>
@@ -155,19 +163,19 @@ export default function ConsultationHistory() {
     },
     {
       key: 'diagnosis',
-      header: 'Diagnosis',
+      header: t('common.diagnosis'),
       render: (row) => (
         <Badge variant="primary">{row.diagnosis}</Badge>
       ),
     },
     {
       key: 'prescription',
-      header: 'Prescription',
+      header: t('patient.consultations.prescription'),
       render: (row) =>
         row.medicines.length > 0 ? (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-bold text-label-md">
             <span className="material-symbols-outlined text-[16px]">medication</span>
-            {row.medicines.length} medicine{row.medicines.length === 1 ? '' : 's'}
+            {t('patient.consultations.medicineCount', { count: row.medicines.length })}
           </span>
         ) : (
           <span className="text-on-surface-variant">—</span>
@@ -175,7 +183,7 @@ export default function ConsultationHistory() {
     },
     {
       key: 'summary',
-      header: 'Summary',
+      header: t('patient.consultations.summary'),
       render: (row) => (
         <p className="text-on-surface-variant max-w-xs truncate" title={row.complaint}>
           {row.complaint}
@@ -184,20 +192,24 @@ export default function ConsultationHistory() {
     },
     {
       key: 'status',
-      header: 'Status',
-      render: (row) => <Badge variant={STATUS_BADGE[row.status] ?? 'neutral'}>{row.status}</Badge>,
+      header: t('common.status'),
+      render: (row) => (
+        <Badge variant={STATUS_BADGE[row.status] ?? 'neutral'}>
+          {t(`patient.consultations.${STATUS_LABEL_KEY[row.status]}`)}
+        </Badge>
+      ),
     },
     {
       key: 'actions',
-      header: 'Actions',
+      header: t('common.actions'),
       render: (row) => (
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => handleView(row)}
             className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-            title="View Summary"
-            aria-label={`View summary for ${row.consultationId}`}
+            title={t('patient.consultations.viewSummary')}
+            aria-label={t('patient.consultations.viewSummaryAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">visibility</span>
           </button>
@@ -205,8 +217,8 @@ export default function ConsultationHistory() {
             type="button"
             onClick={() => handleDownload(row)}
             className="p-2 rounded-full text-primary hover:bg-primary-container/30 transition-colors"
-            title="Download PDF"
-            aria-label={`Download summary for ${row.consultationId}`}
+            title={t('patient.consultations.downloadPdf')}
+            aria-label={t('patient.consultations.downloadAria', { id: row.consultationId })}
           >
             <span className="material-symbols-outlined text-lg">download</span>
           </button>
@@ -218,12 +230,15 @@ export default function ConsultationHistory() {
   return (
     <DashboardLayout
       sidebar={<PatientSidebar />}
-      headerProps={{ title: 'Consultation History', subtitle: 'Past consultations with doctors' }}
+      headerProps={{ title: t('patient.consultations.title'), subtitle: t('patient.consultations.subtitle') }}
     >
       <Card
-        title="Past Consultations"
+        title={t('patient.consultations.pastConsultations')}
         icon="video_library"
-        subtitle={`${consultations.length} consultation${consultations.length === 1 ? '' : 's'} on record`}
+        subtitle={t(
+          consultations.length === 1 ? 'patient.consultations.onRecordOne' : 'patient.consultations.onRecordMany',
+          { count: consultations.length }
+        )}
       >
         <Table
           columns={columns}
@@ -232,9 +247,9 @@ export default function ConsultationHistory() {
           emptyState={
             <div className="text-center py-14">
               <span className="material-symbols-outlined text-5xl text-outline">video_library</span>
-              <p className="font-bold text-on-surface mt-3">No consultations yet.</p>
+              <p className="font-bold text-on-surface mt-3">{t('patient.consultations.noneYet')}</p>
               <p className="text-on-surface-variant text-label-md mt-1">
-                Completed consultations will appear here automatically.
+                {t('patient.consultations.willAppearHere')}
               </p>
             </div>
           }
@@ -244,7 +259,7 @@ export default function ConsultationHistory() {
       <Modal
         open={Boolean(selected)}
         onClose={() => setSelected(null)}
-        title="Consultation Summary"
+        title={t('patient.consultations.consultationSummary')}
         icon="fact_check"
         size="lg"
       >

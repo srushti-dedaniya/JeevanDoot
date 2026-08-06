@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import PatientSidebar from '../../components/layout/PatientSidebar';
 import Card from '../../components/common/Card';
@@ -5,15 +6,15 @@ import Badge from '../../components/common/Badge';
 import { usePatient } from '../../hooks/usePatient';
 
 const ALLERGIES = [
-  { name: 'Penicillin', severity: 'High', reaction: 'Skin rash & breathing difficulty' },
-  { name: 'Peanuts', severity: 'Moderate', reaction: 'Swelling & hives' },
+  { name: 'Penicillin', severityKey: 'severityHigh', reaction: 'Skin rash & breathing difficulty' },
+  { name: 'Peanuts', severityKey: 'severityModerate', reaction: 'Swelling & hives' },
 ];
 
 const MEDICAL_HISTORY = [
-  { title: 'Diagnoses', icon: 'diagnosis', items: ['Hypertension (Stage 1)', 'Type 2 Diabetes', 'GERD'] },
-  { title: 'Past Surgeries', icon: 'local_hospital', items: ['Appendectomy (2015)'] },
-  { title: 'Current Medications', icon: 'medication', items: ['Amlodipine 5mg', 'Metformin 500mg', 'Omeprazole 20mg'] },
-  { title: 'Chronic Conditions', icon: 'monitor_heart', items: ['Hypertension', 'Diabetes'] },
+  { titleKey: 'historyDiagnoses', icon: 'diagnosis', items: ['Hypertension (Stage 1)', 'Type 2 Diabetes', 'GERD'] },
+  { titleKey: 'historySurgeries', icon: 'local_hospital', items: ['Appendectomy (2015)'] },
+  { titleKey: 'historyMedications', icon: 'medication', items: ['Amlodipine 5mg', 'Metformin 500mg', 'Omeprazole 20mg'] },
+  { titleKey: 'historyChronic', icon: 'monitor_heart', items: ['Hypertension', 'Diabetes'] },
 ];
 
 const VACCINATIONS = [
@@ -50,6 +51,7 @@ function DetailRow({ label, value, icon }) {
 }
 
 export default function MedicalRecords() {
+  const { t } = useTranslation();
   const { patient } = usePatient();
   const p = {
     ...patient,
@@ -59,10 +61,13 @@ export default function MedicalRecords() {
   };
   const initials = p.name.split(' ').map((n) => n[0]).join('');
 
+  const vaccineStatus = (vaccine) =>
+    vaccine.status === 'Completed' ? t('common.completed') : vaccine.status;
+
   return (
     <DashboardLayout
       sidebar={<PatientSidebar />}
-      headerProps={{ title: 'Medical Records', subtitle: 'View your medical history and documents' }}
+      headerProps={{ title: t('patient.records.title'), subtitle: t('patient.records.subtitle') }}
     >
       <Card className="mb-6">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -79,34 +84,34 @@ export default function MedicalRecords() {
           </div>
           <div className="flex items-center gap-3">
             <Badge variant="primary" icon="bloodtype">{p.bloodGroup}</Badge>
-            <Badge variant="success" dot dotColor="bg-primary">Active Patient</Badge>
+            <Badge variant="success" dot dotColor="bg-primary">{t('patient.records.activePatient')}</Badge>
           </div>
         </div>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <Card title="Patient Details" icon="person" className="lg:col-span-1">
+        <Card title={t('patient.records.patientDetails')} icon="person" className="lg:col-span-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DetailRow label="Full Name" value={p.name} icon="badge" />
-            <DetailRow label="Patient ID" value={p.id} icon="pin" />
-            <DetailRow label="Gender" value={p.gender} icon="wc" />
-            <DetailRow label="Village" value={p.village} icon="home" />
+            <DetailRow label={t('patient.records.fullName')} value={p.name} icon="badge" />
+            <DetailRow label={t('patient.records.patientId')} value={p.id} icon="pin" />
+            <DetailRow label={t('patient.records.gender')} value={p.gender} icon="wc" />
+            <DetailRow label={t('common.village')} value={p.village} icon="home" />
           </div>
         </Card>
 
-        <Card title="Vitals & Body Metrics" icon="monitor_heart" className="lg:col-span-2">
+        <Card title={t('patient.records.vitalsMetrics')} icon="monitor_heart" className="lg:col-span-2">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <StatTile label="Blood Group" value={p.bloodGroup} icon="bloodtype" />
-            <StatTile label="Age" value={p.age} unit="yrs" icon="calendar_month" />
-            <StatTile label="Height" value={p.heightCm} unit="cm" icon="height" />
-            <StatTile label="Weight" value={p.weightKg} unit="kg" icon="monitor_weight" />
-            <StatTile label="BMI" value={p.bmi} icon="monitoring" />
+            <StatTile label={t('patient.records.bloodGroup')} value={p.bloodGroup} icon="bloodtype" />
+            <StatTile label={t('patient.records.age')} value={p.age} unit="yrs" icon="calendar_month" />
+            <StatTile label={t('patient.records.height')} value={p.heightCm} unit="cm" icon="height" />
+            <StatTile label={t('patient.records.weight')} value={p.weightKg} unit="kg" icon="monitor_weight" />
+            <StatTile label={t('patient.records.bmi')} value={p.bmi} icon="monitoring" />
           </div>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <Card title="Allergies" icon="warning" className="h-full">
+        <Card title={t('patient.records.allergies')} icon="warning" className="h-full">
           <div className="space-y-3">
             {p.allergies.map((allergy) => (
               <div key={allergy.name} className="bg-error-container rounded-lg p-4 flex items-start justify-between gap-3">
@@ -117,16 +122,18 @@ export default function MedicalRecords() {
                   </p>
                   <p className="text-sm text-on-error-container mt-1">{allergy.reaction}</p>
                 </div>
-                <Badge variant={allergy.severity === 'High' ? 'critical' : 'warning'}>{allergy.severity}</Badge>
+                <Badge variant={allergy.severityKey === 'severityHigh' ? 'critical' : 'warning'}>
+                  {t(`patient.records.${allergy.severityKey}`)}
+                </Badge>
               </div>
             ))}
           </div>
           {p.allergies.length === 0 && (
-            <p className="text-on-surface-variant">No known allergies.</p>
+            <p className="text-on-surface-variant">{t('patient.records.noAllergies')}</p>
           )}
         </Card>
 
-        <Card title="Emergency Contact" icon="emergency" className="h-full">
+        <Card title={t('patient.records.emergencyContact')} icon="emergency" className="h-full">
           <div className="flex items-center gap-4 mb-5">
             <div className="w-14 h-14 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-headline text-xl font-bold shrink-0">
               {p.emergencyContact.name.split(' ').map((n) => n[0]).join('')}
@@ -137,22 +144,22 @@ export default function MedicalRecords() {
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <DetailRow label="Primary" value={p.emergencyContact.phone} icon="call" />
-            <DetailRow label="Alternate" value={p.emergencyContact.alternate} icon="phone_iphone" />
+            <DetailRow label={t('patient.records.primary')} value={p.emergencyContact.phone} icon="call" />
+            <DetailRow label={t('patient.records.alternate')} value={p.emergencyContact.alternate} icon="phone_iphone" />
           </div>
           <div className="mt-4 bg-surface-container-low rounded-lg p-4">
-            <DetailRow label="Address" value={p.emergencyContact.address} icon="location_on" />
+            <DetailRow label={t('patient.records.address')} value={p.emergencyContact.address} icon="location_on" />
           </div>
         </Card>
       </div>
 
-      <Card title="Medical History" icon="history" className="mb-6">
+      <Card title={t('patient.records.medicalHistory')} icon="history" className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {p.medicalHistory.map((section) => (
-            <div key={section.title} className="bg-surface-container-low rounded-lg p-4">
+            <div key={section.titleKey} className="bg-surface-container-low rounded-lg p-4">
               <p className="flex items-center gap-2 font-bold text-on-surface mb-3">
                 <span className="material-symbols-outlined text-primary text-lg">{section.icon}</span>
-                {section.title}
+                {t(`patient.records.${section.titleKey}`)}
               </p>
               <ul className="space-y-1 text-on-surface-variant">
                 {section.items.map((item) => (
@@ -167,7 +174,7 @@ export default function MedicalRecords() {
         </div>
       </Card>
 
-      <Card title="Vaccination History" icon="vaccines">
+      <Card title={t('patient.records.vaccinationHistory')} icon="vaccines">
         <div className="space-y-3">
           {p.vaccinations.map((vaccine) => (
             <div
@@ -181,7 +188,7 @@ export default function MedicalRecords() {
                   <p className="text-label-md text-on-surface-variant">{vaccine.doses} · {vaccine.date}</p>
                 </div>
               </div>
-              <Badge variant={vaccine.status === 'Completed' ? 'success' : 'warning'}>{vaccine.status}</Badge>
+              <Badge variant={vaccine.status === 'Completed' ? 'success' : 'warning'}>{vaccineStatus(vaccine)}</Badge>
             </div>
           ))}
         </div>
