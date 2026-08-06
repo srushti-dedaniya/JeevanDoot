@@ -13,15 +13,24 @@ import { useAuth } from '../../hooks/useAuth';
 import { GOVERNMENT_NAV } from './governmentNav';
 
 const TOP_SCHEMES = [
-  { id: 's1', name: 'Ayushman Bharat (PM-JAY)', registrations: '12,486', coverage: 64 },
-  { id: 's2', name: 'National Health Mission', registrations: '8,975', coverage: 51 },
-  { id: 's3', name: 'Mission Indradhanush', registrations: '5,612', coverage: 94 },
+  { id: 's1', schemeId: 'PM-JAY', registrations: '12,486', coverage: 64 },
+  { id: 's2', schemeId: 'NHM', registrations: '8,975', coverage: 51 },
+  { id: 's3', schemeId: 'MI', registrations: '5,612', coverage: 94 },
 ];
 
 const RECENT_QUERIES = [
-  { id: 'Q-2215', scheme: 'Ayushman Bharat (PM-JAY)', question: 'Are we eligible for the ₹5 lakh cover with an annual income of ₹2.4 lakh?', time: '2 hours ago', status: 'Open' },
-  { id: 'Q-2214', scheme: 'PMMVY', question: 'What documents are needed to claim maternity benefit instalments?', time: 'Yesterday', status: 'Open' },
-  { id: 'Q-2213', scheme: 'Mission Indradhanush', question: 'Where is the nearest catch-up vaccination camp for my child?', time: '2 days ago', status: 'Answered' },
+  { id: 'Q-2215', schemeId: 'PM-JAY', status: 'Open' },
+  { id: 'Q-2214', schemeId: 'PMMVY', status: 'Open' },
+  { id: 'Q-2213', schemeId: 'MI', status: 'Answered' },
+];
+
+const SCHEME_CHART = [
+  { id: 'PM-JAY', value: 32, color: '#1B5E4F' },
+  { id: 'NHM', value: 23, color: '#C8B900' },
+  { id: 'MI', value: 15, color: '#E8734A' },
+  { id: 'PMMVY', value: 8, color: '#7B61B5' },
+  { id: 'NPCDCS', value: 11, color: '#2E86AB' },
+  { id: 'RBSK', value: 11, color: '#9B5DE5' },
 ];
 
 export default function GovernmentDashboard() {
@@ -74,19 +83,19 @@ export default function GovernmentDashboard() {
 
         <Card title={t('government.coverageByScheme')} subtitle={t('government.schemesBreakdown')}>
           <PieChart
-            labels={['PM-JAY', 'NHM', 'Indradhanush', 'PMMVY', 'NPCDCS', 'RBSK']}
-            data={[32, 23, 15, 8, 11, 11]}
-            colors={['#1B5E4F', '#C8B900', '#E8734A', '#7B61B5', '#2E86AB', '#9B5DE5']}
+            labels={SCHEME_CHART.map((s) => t(`government.schemes.${s.id}.short`))}
+            data={SCHEME_CHART.map((s) => s.value)}
+            colors={SCHEME_CHART.map((s) => s.color)}
             height={200}
           />
           <div className="flex flex-col gap-3 mt-4">
-            {[['PM-JAY', 32], ['NHM', 23], ['Indradhanush', 15], ['PMMVY', 8], ['NPCDCS', 11], ['RBSK', 11]].map(([label, value], i) => (
-              <div key={label} className="flex items-center justify-between">
+            {SCHEME_CHART.map((s) => (
+              <div key={s.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full" style={{ background: ['#1B5E4F', '#C8B900', '#E8734A', '#7B61B5', '#2E86AB', '#9B5DE5'][i] }} />
-                  <span className="text-label-md text-on-surface-variant">{label}</span>
+                  <span className="w-3 h-3 rounded-full" style={{ background: s.color }} />
+                  <span className="text-label-md text-on-surface-variant">{t(`government.schemes.${s.id}.short`)}</span>
                 </div>
-                <span className="font-bold text-on-surface">{value}%</span>
+                <span className="font-bold text-on-surface">{s.value}%</span>
               </div>
             ))}
           </div>
@@ -110,7 +119,7 @@ export default function GovernmentDashboard() {
                   <span className="material-symbols-outlined">health_and_safety</span>
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-on-surface truncate">{scheme.name}</p>
+                  <p className="font-semibold text-on-surface truncate">{t(`government.schemes.${scheme.schemeId}.short`)}</p>
                   <div className="mt-2 h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
                     <div
                       className="h-full bg-primary rounded-full"
@@ -143,9 +152,9 @@ export default function GovernmentDashboard() {
                   <span className="material-symbols-outlined">help</span>
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-label-md text-on-surface-variant">{query.scheme}</p>
-                  <p className="font-semibold text-on-surface text-sm mt-0.5 line-clamp-2">{query.question}</p>
-                  <p className="text-label-sm text-on-surface-variant mt-1">{query.time}</p>
+                  <p className="text-label-md text-on-surface-variant">{t(`government.schemes.${query.schemeId}.short`)}</p>
+                  <p className="font-semibold text-on-surface text-sm mt-0.5 line-clamp-2">{t(`government.queries.${query.id}.question`)}</p>
+                  <p className="text-label-sm text-on-surface-variant mt-1">{t(`government.queries.${query.id}.date`)}</p>
                 </div>
                 <Badge variant={query.status === 'Open' ? 'warning' : 'success'} dot>{query.status}</Badge>
               </div>

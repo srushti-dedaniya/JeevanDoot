@@ -14,12 +14,12 @@ import { GOVERNMENT_NAV } from './governmentNav';
 const STATUS_FILTERS = ['all', 'open', 'answered'];
 
 const QUERY_META = [
-  { id: 'Q-2215', scheme: 'Ayushman Bharat (PM-JAY)', name: 'Ramesh Kumar', village: 'Amroli', status: 'Open' },
+  { id: 'Q-2215', scheme: 'PM-JAY', name: 'Ramesh Kumar', village: 'Amroli', status: 'Open' },
   { id: 'Q-2214', scheme: 'PMMVY', name: 'Sunita Devi', village: 'Palia', status: 'Open' },
-  { id: 'Q-2213', scheme: 'Mission Indradhanush', name: 'Anil Verma', village: 'Devgram', status: 'Answered' },
+  { id: 'Q-2213', scheme: 'MI', name: 'Anil Verma', village: 'Devgram', status: 'Answered' },
   { id: 'Q-2212', scheme: 'NPCDCS', name: 'Meera Sharma', village: 'Kanker East', status: 'Answered' },
   { id: 'Q-2211', scheme: 'RBSK', name: 'Laxmi Verma', village: 'Dhamtari Rural', status: 'Open' },
-  { id: 'Q-2210', scheme: 'Ayushman Bharat (PM-JAY)', name: 'Gopal Prasad', village: 'Lormi Block', status: 'Answered' },
+  { id: 'Q-2210', scheme: 'PM-JAY', name: 'Gopal Prasad', village: 'Lormi Block', status: 'Answered' },
 ];
 
 export default function PublicQueries() {
@@ -38,6 +38,7 @@ export default function PublicQueries() {
 
   const rows = queries.map((q) => ({
     ...q,
+    schemeName: t(`government.schemes.${q.scheme}.short`),
     date: t(`government.queries.${q.id}.date`),
     question: t(`government.queries.${q.id}.question`),
     reply: q.userReply || t(`government.queries.${q.id}.reply`),
@@ -51,7 +52,7 @@ export default function PublicQueries() {
       (statusFilter === 'all' || q.status === statusFilter) &&
       (!query ||
         q.question.toLowerCase().includes(query.toLowerCase()) ||
-        q.scheme.toLowerCase().includes(query.toLowerCase()) ||
+        q.schemeName.toLowerCase().includes(query.toLowerCase()) ||
         q.name.toLowerCase().includes(query.toLowerCase()))
   );
 
@@ -141,7 +142,7 @@ export default function PublicQueries() {
                 {filtered.map((q) => (
                   <tr key={q.id} className="border-b border-outline-variant hover:bg-surface-container-low transition-colors">
                     <td className="px-6 py-4 font-mono font-semibold text-primary">{q.id}</td>
-                    <td className="px-6 py-4 text-on-surface-variant whitespace-nowrap">{q.scheme}</td>
+                    <td className="px-6 py-4 text-on-surface-variant whitespace-nowrap">{q.schemeName}</td>
                     <td className="px-6 py-4 text-on-surface max-w-md">
                       {q.question}
                       {q.reply && (
@@ -205,7 +206,7 @@ export default function PublicQueries() {
         {replyingTo && (
           <div className="space-y-5">
             <div className="bg-surface-container-low rounded-lg p-4">
-              <p className="text-label-md text-on-surface-variant">{replyingTo.scheme} · {replyingTo.name}, {replyingTo.village}</p>
+              <p className="text-label-md text-on-surface-variant">{replyingTo.schemeName} · {replyingTo.name}, {replyingTo.village}</p>
               <p className="font-semibold text-on-surface mt-1">{replyingTo.question}</p>
             </div>
             <div>

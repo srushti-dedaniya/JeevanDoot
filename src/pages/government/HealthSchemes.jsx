@@ -10,13 +10,13 @@ import KPIWidget from '../../components/charts/KPIWidget';
 import { GOVERNMENT_NAV } from './governmentNav';
 
 const SCHEMES = [
-  { id: 'PM-JAY', name: 'Ayushman Bharat – Pradhan Mantri Jan Arogya Yojana', department: 'Ministry of Health & Family Welfare', budget: '₹5,00,000', registrations: 12486, target: 19500, status: 'Active' },
-  { id: 'NHM', name: 'National Health Mission', department: 'Ministry of Health & Family Welfare', budget: '₹8,00,000', registrations: 8975, target: 17500, status: 'Active' },
-  { id: 'MI', name: 'Mission Indradhanush', department: 'MoHFW – Immunization', budget: '₹2,40,000', registrations: 5612, target: 6000, status: 'Active' },
-  { id: 'PMMVY', name: 'Pradhan Mantri Matru Vandana Yojana', department: 'Ministry of Women & Child Development', budget: '₹1,80,000', registrations: 3240, target: 4500, status: 'Active' },
-  { id: 'NPCDCS', name: 'NPCDCS – Non-Communicable Diseases', department: 'MoHFW – NCD', budget: '₹2,10,000', registrations: 4330, target: 8000, status: 'Active' },
-  { id: 'RBSK', name: 'Rashtriya Bal Swasthya Karyakram', department: 'MoHFW – Child Health', budget: '₹1,20,000', registrations: 2108, target: 4000, status: 'Active' },
-  { id: 'PMSMA', name: 'PM Surakshit Matritva Abhiyan', department: 'MoHFW – Maternal Health', budget: '₹95,000', registrations: 1892, target: 3500, status: 'Active' },
+  { id: 'PM-JAY', budget: '₹5,00,000', registrations: 12486, target: 19500, status: 'Active' },
+  { id: 'NHM', budget: '₹8,00,000', registrations: 8975, target: 17500, status: 'Active' },
+  { id: 'MI', budget: '₹2,40,000', registrations: 5612, target: 6000, status: 'Active' },
+  { id: 'PMMVY', budget: '₹1,80,000', registrations: 3240, target: 4500, status: 'Active' },
+  { id: 'NPCDCS', budget: '₹2,10,000', registrations: 4330, target: 8000, status: 'Active' },
+  { id: 'RBSK', budget: '₹1,20,000', registrations: 2108, target: 4000, status: 'Active' },
+  { id: 'PMSMA', budget: '₹95,000', registrations: 1892, target: 3500, status: 'Active' },
 ];
 
 const totalRegistrations = SCHEMES.reduce((sum, scheme) => sum + scheme.registrations, 0);
@@ -88,7 +88,13 @@ export default function HealthSchemes() {
 
   const sidebarItems = GOVERNMENT_NAV.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
 
-  const filtered = SCHEMES.filter(
+  const rows = SCHEMES.map((scheme) => ({
+    ...scheme,
+    name: t(`government.schemes.${scheme.id}.name`),
+    department: t(`government.schemes.${scheme.id}.department`),
+  }));
+
+  const filtered = rows.filter(
     (s) =>
       !query ||
       s.name.toLowerCase().includes(query.toLowerCase()) ||

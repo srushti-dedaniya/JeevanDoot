@@ -927,7 +927,44 @@
     "replySent": "Reply sent for query {{id}}",
     "queryMarked": "Query {{id}} marked as {{status}}",
     "statusFilterLabel": "Filter by status",
-    "queries": {
+
+    "schemes": {
+      "PM-JAY": {
+        "name": "Ayushman Bharat – Pradhan Mantri Jan Arogya Yojana",
+        "short": "Ayushman Bharat (PM-JAY)",
+        "department": "Ministry of Health & Family Welfare"
+      },
+      "NHM": {
+        "name": "National Health Mission",
+        "short": "National Health Mission",
+        "department": "Ministry of Health & Family Welfare"
+      },
+      "MI": {
+        "name": "Mission Indradhanush",
+        "short": "Mission Indradhanush",
+        "department": "MoHFW – Immunization"
+      },
+      "PMMVY": {
+        "name": "Pradhan Mantri Matru Vandana Yojana",
+        "short": "PMMVY",
+        "department": "Ministry of Women & Child Development"
+      },
+      "NPCDCS": {
+        "name": "NPCDCS – Non-Communicable Diseases",
+        "short": "NPCDCS",
+        "department": "MoHFW – NCD"
+      },
+      "RBSK": {
+        "name": "Rashtriya Bal Swasthya Karyakram",
+        "short": "RBSK",
+        "department": "MoHFW – Child Health"
+      },
+      "PMSMA": {
+        "name": "PM Surakshit Matritva Abhiyan",
+        "short": "PMSMA",
+        "department": "MoHFW – Maternal Health"
+      }
+    },    "queries": {
       "Q-2215": {
         "date": "2 hours ago",
         "question": "My family earns ₹2.4 lakh a year. Are we eligible for the ₹5 lakh cover?",
