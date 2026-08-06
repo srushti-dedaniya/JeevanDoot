@@ -13,20 +13,22 @@ import { GOVERNMENT_NAV } from './governmentNav';
 
 const STATUS_FILTERS = ['all', 'open', 'answered'];
 
-const INITIAL_QUERIES = [
-  { id: 'Q-2215', scheme: 'Ayushman Bharat (PM-JAY)', question: 'My family earns ₹2.4 lakh a year. Are we eligible for the ₹5 lakh cover?', name: 'Ramesh Kumar', village: 'Amroli', date: '2 hours ago', status: 'Open', reply: '' },
-  { id: 'Q-2214', scheme: 'PMMVY', question: 'What documents do I need to claim the maternity benefit instalments?', name: 'Sunita Devi', village: 'Palia', date: 'Yesterday', status: 'Open', reply: '' },
-  { id: 'Q-2213', scheme: 'Mission Indradhanush', question: 'My child missed the last polio drop. Where is the nearest catch-up camp?', name: 'Anil Verma', village: 'Devgram', date: '2 days ago', status: 'Answered', reply: 'A catch-up camp is scheduled at Palia School this Saturday, 10 AM – 2 PM. Please carry the child\u2019s vaccination card.' },
-  { id: 'Q-2212', scheme: 'NPCDCS', question: 'Can I get a free blood sugar test under this scheme at my PHC?', name: 'Meera Sharma', village: 'Kanker East', date: '4 days ago', status: 'Answered', reply: 'Yes. Free screening is available every Thursday at your nearest PHC under NPCDCS. Carry your Aadhaar card.' },
-  { id: 'Q-2211', scheme: 'RBSK', question: 'Does the school health check-up cover hearing and vision screening?', name: 'Laxmi Verma', village: 'Dhamtari Rural', date: '6 days ago', status: 'Open', reply: '' },
-  { id: 'Q-2210', scheme: 'Ayushman Bharat (PM-JAY)', question: 'How do I get a new e-card if my old one was lost?', name: 'Gopal Prasad', village: 'Lormi Block', date: '1 week ago', status: 'Answered', reply: 'Please visit your nearest empanelled hospital or CSC with Aadhaar to re-issue your e-card free of cost.' },
+const QUERY_META = [
+  { id: 'Q-2215', scheme: 'Ayushman Bharat (PM-JAY)', name: 'Ramesh Kumar', village: 'Amroli', status: 'Open' },
+  { id: 'Q-2214', scheme: 'PMMVY', name: 'Sunita Devi', village: 'Palia', status: 'Open' },
+  { id: 'Q-2213', scheme: 'Mission Indradhanush', name: 'Anil Verma', village: 'Devgram', status: 'Answered' },
+  { id: 'Q-2212', scheme: 'NPCDCS', name: 'Meera Sharma', village: 'Kanker East', status: 'Answered' },
+  { id: 'Q-2211', scheme: 'RBSK', name: 'Laxmi Verma', village: 'Dhamtari Rural', status: 'Open' },
+  { id: 'Q-2210', scheme: 'Ayushman Bharat (PM-JAY)', name: 'Gopal Prasad', village: 'Lormi Block', status: 'Answered' },
 ];
 
 export default function PublicQueries() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const { notify } = useNotification();
-  const [queries, setQueries] = useState(INITIAL_QUERIES);
+  const [queries, setQueries] = useState(() =>
+    QUERY_META.map((m) => ({ ...m, userReply: '', repliedBy: '' }))
+  );
   const [statusFilter, setStatusFilter] = useState('all');
   const [query, setQuery] = useState('');
   const [replyingTo, setReplyingTo] = useState(null);
@@ -34,10 +36,17 @@ export default function PublicQueries() {
 
   const sidebarItems = GOVERNMENT_NAV.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
 
-  const openCount = queries.filter((q) => q.status === 'Open').length;
-  const answeredCount = queries.length - openCount;
+  const rows = queries.map((q) => ({
+    ...q,
+    date: t(`government.queries.${q.id}.date`),
+    question: t(`government.queries.${q.id}.question`),
+    reply: q.userReply || t(`government.queries.${q.id}.reply`),
+  }));
 
-  const filtered = queries.filter(
+  const openCount = rows.filter((q) => q.status === 'Open').length;
+  const answeredCount = rows.length - openCount;
+
+  const filtered = rows.filter(
     (q) =>
       (statusFilter === 'all' || q.status === statusFilter) &&
       (!query ||
@@ -70,7 +79,7 @@ export default function PublicQueries() {
     setQueries((prev) =>
       prev.map((q) =>
         q.id === replyingTo.id
-          ? { ...q, reply: replyText.trim(), repliedBy: agent, status: 'Answered' }
+          ? { ...q, userReply: replyText.trim(), repliedBy: agent, status: 'Answered' }
           : q
       )
     );

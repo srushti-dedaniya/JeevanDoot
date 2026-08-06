@@ -925,7 +925,40 @@
     "replyingAs": "Replying as {{name}}",
     "replyRequired": "Please type a reply before sending.",
     "replySent": "Reply sent for query {{id}}",
-    "queryMarked": "Query {{id}} marked as {{status}}"
+    "queryMarked": "Query {{id}} marked as {{status}}",
+    "statusFilterLabel": "Filter by status",
+    "queries": {
+      "Q-2215": {
+        "date": "2 hours ago",
+        "question": "My family earns ₹2.4 lakh a year. Are we eligible for the ₹5 lakh cover?",
+        "reply": ""
+      },
+      "Q-2214": {
+        "date": "Yesterday",
+        "question": "What documents do I need to claim the maternity benefit instalments?",
+        "reply": ""
+      },
+      "Q-2213": {
+        "date": "2 days ago",
+        "question": "My child missed the last polio drop. Where is the nearest catch-up camp?",
+        "reply": "A catch-up camp is scheduled at Palia School this Saturday, 10 AM – 2 PM. Please carry the child’s vaccination card."
+      },
+      "Q-2212": {
+        "date": "4 days ago",
+        "question": "Can I get a free blood sugar test under this scheme at my PHC?",
+        "reply": "Yes. Free screening is available every Thursday at your nearest PHC under NPCDCS. Carry your Aadhaar card."
+      },
+      "Q-2211": {
+        "date": "6 days ago",
+        "question": "Does the school health check-up cover hearing and vision screening?",
+        "reply": ""
+      },
+      "Q-2210": {
+        "date": "1 week ago",
+        "question": "How do I get a new e-card if my old one was lost?",
+        "reply": "Please visit your nearest empanelled hospital or CSC with Aadhaar to re-issue your e-card free of cost."
+      }
+    }
   },
   "schedule": {
     "mon": "Mon",
