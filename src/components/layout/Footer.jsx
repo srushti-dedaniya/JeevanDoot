@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-export default function Footer({ links = [], legal = '© 2024 Rural Community Care Initiative. Secured by JeevanDoot-Shield.' }) {
+export default function Footer({ links = [], legal }) {
+  const { t } = useTranslation();
   const defaultLinks = [
     { label: 'Help Center', to: '/help' },
     { label: 'Privacy Policy', to: '/privacy' },
@@ -8,6 +10,7 @@ export default function Footer({ links = [], legal = '© 2024 Rural Community Ca
   ];
 
   const resolvedLinks = links.length ? links : defaultLinks;
+  const legalText = legal || t('app.secured', { year: '2024' });
 
   return (
     <footer className="mt-12 flex flex-col md:flex-row items-center justify-between gap-6 text-outline text-label-md">
@@ -22,7 +25,7 @@ export default function Footer({ links = [], legal = '© 2024 Rural Community Ca
           </Link>
         ))}
       </div>
-      <p className="text-center md:text-right">{legal}</p>
+      <p className="text-center md:text-right">{legalText}</p>
     </footer>
   );
 }

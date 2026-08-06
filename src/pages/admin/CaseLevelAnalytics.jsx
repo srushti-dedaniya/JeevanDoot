@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -7,14 +8,14 @@ import HeatMap from '../../components/charts/HeatMap';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
-    { label: 'Disease Surveillance', to: '/admin/surveillance', icon: 'public_health' },
-    { label: 'Case-Level Analytics', to: '/admin/case-analytics', icon: 'analytics' },
-    { label: 'Audit Log', to: '/admin/audit-log', icon: 'verified_user' },
-    { label: 'Report Generation', to: '/admin/reports', icon: 'summarize' },
-    { label: 'Doctor Management', to: '/admin/doctors', icon: 'medical_services' },
-    { label: 'CHW Management', to: '/admin/chws', icon: 'volunteer_activism' },
-    { label: 'Configuration', to: '/admin/settings', icon: 'settings' },
+    { labelKey: 'dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'diseaseSurveillance', to: '/admin/surveillance', icon: 'public_health' },
+    { labelKey: 'caseAnalytics', to: '/admin/case-analytics', icon: 'analytics' },
+    { labelKey: 'auditLog', to: '/admin/audit-log', icon: 'verified_user' },
+    { labelKey: 'reportGeneration', to: '/admin/reports', icon: 'summarize' },
+    { labelKey: 'doctorManagement', to: '/admin/doctors', icon: 'medical_services' },
+    { labelKey: 'chwManagement', to: '/admin/chws', icon: 'volunteer_activism' },
+    { labelKey: 'configuration', to: '/admin/settings', icon: 'settings' },
   ],
 };
 
@@ -26,20 +27,23 @@ const RISK_ROWS = [
 ];
 
 export default function CaseLevelAnalytics() {
+  const { t } = useTranslation();
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Case-Level Analytics', subtitle: 'Deep dive into individual case outcomes' }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('analytics.title'), subtitle: t('analytics.subtitle') }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <KPIWidget label="Total Cases" value="2,410" icon="description" color="primary" trend={9} />
-        <KPIWidget label="Resolved" value="1,940" icon="verified" color="secondary" trend={12} />
-        <KPIWidget label="Escalated" value="320" icon="north_east" color="tertiary" trend={-5} />
-        <KPIWidget label="In Follow-up" value="150" icon="schedule" color="error" trend={3} />
+        <KPIWidget label={t('analytics.totalCases')} value="2,410" icon="description" color="primary" trend={9} />
+        <KPIWidget label={t('analytics.resolved')} value="1,940" icon="verified" color="secondary" trend={12} />
+        <KPIWidget label={t('analytics.escalated')} value="320" icon="north_east" color="tertiary" trend={-5} />
+        <KPIWidget label={t('analytics.inFollowUp')} value="150" icon="schedule" color="error" trend={3} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="Cases by Diagnosis" subtitle="Top conditions" className="lg:col-span-2">
+        <Card title={t('analytics.casesByDiagnosis')} subtitle={t('analytics.topConditions')} className="lg:col-span-2">
           <BarChart
             labels={['Malaria', 'Fever', 'Prenatal', 'Chronic', 'Respiratory', 'Other']}
             data={[540, 480, 390, 350, 260, 390]}
@@ -47,12 +51,12 @@ export default function CaseLevelAnalytics() {
             height={300}
           />
         </Card>
-        <Card title="Case Outcome Flow" subtitle="Escalation funnel">
+        <Card title={t('analytics.caseOutcomeFlow')} subtitle={t('analytics.escalationFunnel')}>
           <div className="space-y-4">
             {[
-              { label: 'Resolved at PHC', value: 81, color: 'bg-primary' },
-              { label: 'Referred to CHC', value: 13, color: 'bg-tertiary' },
-              { label: 'Hospitalized', value: 6, color: 'bg-error' },
+              { label: t('analytics.resolvedAtPhc'), value: 81, color: 'bg-primary' },
+              { label: t('analytics.referredToChc'), value: 13, color: 'bg-tertiary' },
+              { label: t('analytics.hospitalized'), value: 6, color: 'bg-error' },
             ].map((r) => (
               <div key={r.label}>
                 <div className="flex justify-between text-label-md mb-1">
@@ -68,24 +72,24 @@ export default function CaseLevelAnalytics() {
         </Card>
       </div>
 
-      <Card title="Risk Evolution Heatmap" subtitle="Patient risk intensity over the past week">
+      <Card title={t('analytics.riskEvolution')} subtitle={t('analytics.riskIntensity')}>
         <HeatMap rows={RISK_ROWS} weekLabels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="Time-to-Treatment" subtitle="Median minutes">
+        <Card title={t('analytics.timeToTreatment')} subtitle={t('analytics.medianMinutes')}>
           <div className="text-center py-8">
             <p className="font-headline text-headline-2xl font-bold text-primary">38 min</p>
-            <p className="text-on-surface-variant text-label-md mt-1">Down 12% vs last month</p>
+            <p className="text-on-surface-variant text-label-md mt-1">{t('analytics.downVsLastMonth')}</p>
           </div>
         </Card>
-        <Card title="Recovery Rate" subtitle="By risk group">
+        <Card title={t('analytics.recoveryRate')} subtitle={t('analytics.byRiskGroup')}>
           <div className="space-y-3 mt-2">
             {[
-              { label: 'Low', value: 98 },
-              { label: 'Moderate', value: 91 },
-              { label: 'High', value: 78 },
-              { label: 'Critical', value: 62 },
+              { label: t('queue.low'), value: 98 },
+              { label: t('queue.moderate'), value: 91 },
+              { label: t('queue.high'), value: 78 },
+              { label: t('queue.critical'), value: 62 },
             ].map((r) => (
               <div key={r.label} className="flex items-center gap-3">
                 <span className="w-20 text-label-md text-on-surface-variant">{r.label}</span>
@@ -97,15 +101,15 @@ export default function CaseLevelAnalytics() {
             ))}
           </div>
         </Card>
-        <Card title="Critical Cases" subtitle="Active high-risk patients">
+        <Card title={t('analytics.criticalCases')} subtitle={t('analytics.activeHighRisk')}>
           <div className="space-y-3">
             {['JD-9921', 'JD-1209', 'JD-1023'].map((id) => (
               <div key={id} className="flex items-center justify-between bg-surface-container-low rounded-lg p-3">
                 <span className="font-mono font-semibold text-primary">{id}</span>
-                <Badge variant="critical">Critical</Badge>
+                <Badge variant="critical">{t('queue.critical')}</Badge>
               </div>
             ))}
-            <p className="text-label-sm text-on-surface-variant">3 critical cases flagged for priority review.</p>
+            <p className="text-label-sm text-on-surface-variant">{t('analytics.flaggedForReview', { count: 3 })}</p>
           </div>
         </Card>
       </div>

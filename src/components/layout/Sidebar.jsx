@@ -1,4 +1,5 @@
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { cx } from '../../utils/helpers';
 
 /**
@@ -10,12 +11,15 @@ import { cx } from '../../utils/helpers';
  *  - footer: React node
  */
 export default function Sidebar({
-  brand = { name: 'JeevanDoot', subtitle: 'Rural Community Care' },
+  brand,
   items = [],
   activeClass = 'bg-primary-container text-on-primary-container',
   footer,
   width = 'w-72',
 }) {
+  const { t } = useTranslation();
+  const resolvedBrand = brand || { name: t('app.name'), subtitle: t('nav.brandSubtitle') };
+
   return (
     <aside
       className={cx(
@@ -26,11 +30,11 @@ export default function Sidebar({
       <div className="h-full p-6 flex flex-col gap-4">
         <div className="mb-6 px-2">
           <h1 className="font-headline text-headline-md font-bold text-primary dark:text-primary-fixed">
-            {brand.name}
+            {resolvedBrand.name}
           </h1>
-          {brand.subtitle && (
+          {resolvedBrand.subtitle && (
             <p className="text-on-surface-variant text-label-md opacity-75">
-              {brand.subtitle}
+              {resolvedBrand.subtitle}
             </p>
           )}
         </div>

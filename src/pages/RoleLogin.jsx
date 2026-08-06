@@ -4,6 +4,7 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
+import { useTranslation } from 'react-i18next';
 import { APP_NAME, REGISTRATION_ROLES, ROLE_META, ROLE_PORTAL } from '../utils/constants';
 
 export default function RoleLogin() {
@@ -16,6 +17,7 @@ export default function RoleLogin() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const { notify } = useNotification();
+  const { t } = useTranslation();
 
   if (!REGISTRATION_ROLES.includes(role)) {
     return <Navigate to="/login" replace />;
@@ -25,9 +27,9 @@ export default function RoleLogin() {
 
   const validate = () => {
     const next = {};
-    if (!email.trim()) next.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Enter a valid email';
-    if (!password) next.password = 'Password is required';
+    if (!email.trim()) next.email = t('auth.emailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = t('auth.emailInvalid');
+    if (!password) next.password = t('auth.passwordRequired');
     return next;
   };
 
@@ -41,7 +43,7 @@ export default function RoleLogin() {
     await login(role, email, password);
     setLoading(false);
 
-    notify({ type: 'success', message: `Welcome back!` });
+    notify({ type: 'success', message: t('auth.welcomeBack') });
     navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
   };
 
@@ -54,8 +56,8 @@ export default function RoleLogin() {
               <img src="/logo.svg" alt={`${APP_NAME} logo`} className="w-7 h-7" />
             </div>
             <div className="leading-tight">
-              <p className="font-headline text-title-md font-bold">{APP_NAME}</p>
-              <p className="text-label-sm text-on-surface-variant">Sign in</p>
+              <p className="font-headline text-title-md font-bold">{t('app.name')}</p>
+              <p className="text-label-sm text-on-surface-variant">{t('auth.signIn')}</p>
             </div>
           </Link>
           <Link
@@ -63,7 +65,7 @@ export default function RoleLogin() {
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-label-md font-semibold text-on-surface-variant hover:text-primary hover:bg-primary-fixed/30 transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-            Choose a role
+            {t('auth.chooseARole')}
           </Link>
         </div>
       </nav>
@@ -74,27 +76,27 @@ export default function RoleLogin() {
             <div className={`mx-auto w-16 h-16 rounded-2xl flex items-center justify-center ${meta.color}`}>
               <span className="material-symbols-outlined text-3xl">{meta.icon}</span>
             </div>
-            <h1 className="font-headline text-headline-lg font-bold mt-4">Sign in as {meta.label}</h1>
-            <p className="text-on-surface-variant mt-1">Welcome back to {APP_NAME}</p>
+            <h1 className="font-headline text-headline-lg font-bold mt-4">{t('auth.signInAs', { label: t(`role.${role}`) })}</h1>
+            <p className="text-on-surface-variant mt-1">{t('auth.welcomeBackTo', { app: APP_NAME })}</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <Input
-              label="Email address"
+              label={t('auth.email')}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
               icon="mail"
               error={errors.email}
               autoComplete="email"
             />
             <Input
-              label="Password"
+              label={t('auth.password')}
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('auth.passwordPlaceholder')}
               icon="lock"
               error={errors.password}
               autoComplete="current-password"
@@ -103,7 +105,7 @@ export default function RoleLogin() {
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
                   className="text-on-surface-variant hover:text-primary"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                 >
                   <span className="material-symbols-outlined">
                     {showPassword ? 'visibility_off' : 'visibility'}
@@ -113,24 +115,24 @@ export default function RoleLogin() {
             />
 
             <Button type="submit" fullWidth size="lg" loading={loading} icon="login">
-              Sign In
+              {t('auth.signIn')}
             </Button>
           </form>
 
           <p className="text-center text-label-md text-on-surface-variant">
-            Demo: any email with any password works
+            {t('auth.demo')}
           </p>
 
           <div className="border-t border-outline-variant pt-5 text-center space-y-2 text-label-md">
             <p className="text-on-surface-variant">
-              New here?{' '}
+              {t('auth.newHere')}{' '}
               <Link to={`/register?role=${role}`} className="font-bold text-primary hover:underline">
-                Create an account as {meta.label}
+                {t('auth.createAccountAs', { label: t(`role.${role}`) })}
               </Link>
             </p>
             <p>
               <Link to="/login" className="text-on-surface-variant hover:text-primary transition-colors">
-                Choose a different role
+                {t('auth.chooseDifferentRole')}
               </Link>
             </p>
           </div>

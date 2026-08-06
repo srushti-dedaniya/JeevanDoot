@@ -1,21 +1,21 @@
+import { useTranslation } from 'react-i18next';
 import { usePagination } from '../../hooks/usePagination';
 import { cx } from '../../utils/helpers';
 
 export default function Pagination({ items, perPage = 10, showInfo = true }) {
+  const { t } = useTranslation();
   const pagination = usePagination(items, perPage);
 
   if (pagination.totalPages <= 1) return null;
+
+  const start = (pagination.page - 1) * perPage + 1;
+  const end = Math.min(pagination.page * perPage, pagination.totalItems);
 
   return (
     <div className="px-6 py-4 flex items-center justify-between border-t border-outline-variant bg-surface-container-low">
       {showInfo && (
         <p className="text-sm text-on-surface-variant">
-          Showing{' '}
-          <span className="font-bold">
-            {(pagination.page - 1) * perPage + 1}-
-            {Math.min(pagination.page * perPage, pagination.totalItems)}
-          </span>{' '}
-          of <span className="font-bold">{pagination.totalItems}</span> entries
+          {t('pagination.showing', { start, end, total: pagination.totalItems })}
         </p>
       )}
       <div className="flex gap-2 ml-auto">
@@ -23,7 +23,7 @@ export default function Pagination({ items, perPage = 10, showInfo = true }) {
           onClick={pagination.prev}
           disabled={pagination.page === 1}
           className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-high disabled:opacity-30 transition-colors"
-          aria-label="Previous page"
+          aria-label={t('pagination.previousPage')}
         >
           <span className="material-symbols-outlined">chevron_left</span>
         </button>
@@ -45,7 +45,7 @@ export default function Pagination({ items, perPage = 10, showInfo = true }) {
           onClick={pagination.next}
           disabled={pagination.page === pagination.totalPages}
           className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-high disabled:opacity-30 transition-colors"
-          aria-label="Next page"
+          aria-label={t('pagination.nextPage')}
         >
           <span className="material-symbols-outlined">chevron_right</span>
         </button>

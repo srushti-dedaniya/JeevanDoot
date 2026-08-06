@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -11,14 +12,14 @@ import { useNotification } from '../../hooks/useNotification';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
-    { label: 'Disease Surveillance', to: '/admin/surveillance', icon: 'public_health' },
-    { label: 'Case-Level Analytics', to: '/admin/case-analytics', icon: 'analytics' },
-    { label: 'Audit Log', to: '/admin/audit-log', icon: 'verified_user' },
-    { label: 'Report Generation', to: '/admin/reports', icon: 'summarize' },
-    { label: 'Doctor Management', to: '/admin/doctors', icon: 'medical_services' },
-    { label: 'CHW Management', to: '/admin/chws', icon: 'volunteer_activism' },
-    { label: 'Configuration', to: '/admin/settings', icon: 'settings' },
+    { labelKey: 'dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'diseaseSurveillance', to: '/admin/surveillance', icon: 'public_health' },
+    { labelKey: 'caseAnalytics', to: '/admin/case-analytics', icon: 'analytics' },
+    { labelKey: 'auditLog', to: '/admin/audit-log', icon: 'verified_user' },
+    { labelKey: 'reportGeneration', to: '/admin/reports', icon: 'summarize' },
+    { labelKey: 'doctorManagement', to: '/admin/doctors', icon: 'medical_services' },
+    { labelKey: 'chwManagement', to: '/admin/chws', icon: 'volunteer_activism' },
+    { labelKey: 'configuration', to: '/admin/settings', icon: 'settings' },
   ],
 };
 
@@ -30,6 +31,7 @@ const CHWS = [
 ];
 
 export default function CHWManagement() {
+  const { t } = useTranslation();
   const { notify } = useNotification();
   const [query, setQuery] = useState('');
   const [coverage, setCoverage] = useState([]);
@@ -50,48 +52,50 @@ export default function CHWManagement() {
       c.cluster.toLowerCase().includes(debouncedQuery.toLowerCase())
   );
 
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
+      sidebarProps={{ items: sidebarItems }}
       headerProps={{
-        title: 'Community Health Worker Management',
-        subtitle: `${CHWS.length} CHWs deployed`,
+        title: t('chwsMgmt.title'),
+        subtitle: t('chwsMgmt.chwsDeployed', { count: CHWS.length }),
         right: (
-          <Button icon="person_add" onClick={() => notify({ type: 'info', message: 'Onboarding flow coming soon' })}>
-            Onboard CHW
+          <Button icon="person_add" onClick={() => notify({ type: 'info', message: t('chwsMgmt.onboardingComingSoon') })}>
+            {t('chwsMgmt.onboardChw')}
           </Button>
         ),
       }}
     >
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <KPIWidget label="Active CHWs" value={CHWS.filter((c) => c.status === 'Active').length} icon="volunteer_activism" color="primary" trend={4} />
-        <KPIWidget label="Families Covered" value="418" icon="home_work" color="secondary" trend={7} />
-        <KPIWidget label="Avg Coverage" value={`${Math.round(coverage.reduce((s, c) => s + c.coverage, 0) / Math.max(coverage.length, 1))}%`} icon="tracked_changes" color="tertiary" trend={2} />
+        <KPIWidget label={t('chwsMgmt.activeChws')} value={CHWS.filter((c) => c.status === 'Active').length} icon="volunteer_activism" color="primary" trend={4} />
+        <KPIWidget label={t('chwsMgmt.familiesCovered')} value="418" icon="home_work" color="secondary" trend={7} />
+        <KPIWidget label={t('chwsMgmt.avgCoverage')} value={`${Math.round(coverage.reduce((s, c) => s + c.coverage, 0) / Math.max(coverage.length, 1))}%`} icon="tracked_changes" color="tertiary" trend={2} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card title="Workforce Map" subtitle="Coverage by cluster" className="lg:col-span-1">
+        <Card title={t('chwsMgmt.workforceMap')} subtitle={t('chwsMgmt.coverageByCluster')} className="lg:col-span-1">
           <div className="space-y-4">
             {coverage.map((c) => (
               <div key={c.cluster}>
                 <div className="flex justify-between text-label-md mb-1">
                   <span className="text-on-surface-variant">{c.cluster}</span>
-                  <span className="font-bold text-on-surface">{c.workers} workers</span>
+                  <span className="font-bold text-on-surface">{t('chwsMgmt.workers', { count: c.workers })}</span>
                 </div>
                 <div className="h-2.5 rounded-full bg-surface-container-high overflow-hidden">
                   <div className="h-full bg-primary rounded-full" style={{ width: `${c.coverage}%` }} />
                 </div>
-                <p className="text-label-sm text-on-surface-variant mt-1">{c.coverage}% coverage</p>
+                <p className="text-label-sm text-on-surface-variant mt-1">{t('chwsMgmt.coveragePct', { value: c.coverage })}</p>
               </div>
             ))}
           </div>
         </Card>
 
         <Card
-          title="CHW Directory"
-          subtitle={`${filtered.length} workers`}
+          title={t('chwsMgmt.chwDirectory')}
+          subtitle={t('chwsMgmt.workersCount', { count: filtered.length })}
           className="lg:col-span-2"
-          headerRight={<SearchBar placeholder="Search CHWs..." onSearch={setQuery} containerClassName="w-64" />}
+          headerRight={<SearchBar placeholder={t('chwsMgmt.searchChws')} onSearch={setQuery} containerClassName="w-64" />}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filtered.map((chw) => (
@@ -123,10 +127,10 @@ export default function CHWManagement() {
                 <div className="flex items-center justify-between">
                   <span className="text-label-md">
                     <span className="font-bold text-on-surface">{chw.families}</span>{' '}
-                    <span className="text-on-surface-variant">families</span>
+                    <span className="text-on-surface-variant">{t('chwsMgmt.families')}</span>
                   </span>
-                  <Button size="sm" variant="ghost" onClick={() => notify({ type: 'info', message: `Viewing ${chw.name}` })}>
-                    View Profile
+                  <Button size="sm" variant="ghost" onClick={() => notify({ type: 'info', message: t('chwsMgmt.viewing', { name: chw.name }) })}>
+                    {t('chwsMgmt.viewProfile')}
                   </Button>
                 </div>
               </div>

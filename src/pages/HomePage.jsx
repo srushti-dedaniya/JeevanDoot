@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { useAuth } from '../hooks/useAuth';
-import { APP_NAME, APP_TAGLINE, REGISTRATION_ROLES, ROLE_LABELS, ROLE_META, ROLE_PORTAL } from '../utils/constants';
+import { useTranslation } from 'react-i18next';
+import { APP_NAME, REGISTRATION_ROLES, ROLE_LABELS, ROLE_META, ROLE_PORTAL } from '../utils/constants';
 
 const HOME_LINKS = [
-  { label: 'Doctor Login', to: '/login/doctor' },
-  { label: 'Patient Login', to: '/login/patient' },
-  { label: 'NGO Login', to: '/login/ngo' },
-  { label: 'Government Login', to: '/login/government' },
-  { label: 'Admin Login', to: '/admin/login' },
+  { labelKey: 'doctorLogin', to: '/login/doctor' },
+  { labelKey: 'patientLogin', to: '/login/patient' },
+  { labelKey: 'ngoLogin', to: '/login/ngo' },
+  { labelKey: 'governmentLogin', to: '/login/government' },
+  { labelKey: 'adminLogin', to: '/admin/login' },
 ];
 
 export default function HomePage() {
   const { user, isAuthenticated, logout } = useAuth();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface">
@@ -23,8 +25,8 @@ export default function HomePage() {
               <img src="/logo.svg" alt={`${APP_NAME} logo`} className="w-7 h-7" />
             </div>
             <div className="leading-tight">
-              <p className="font-headline text-title-md font-bold">{APP_NAME}</p>
-              <p className="text-label-sm text-on-surface-variant">{APP_TAGLINE}</p>
+              <p className="font-headline text-title-md font-bold">{t('app.name')}</p>
+              <p className="text-label-sm text-on-surface-variant">{t('app.tagline')}</p>
             </div>
           </Link>
 
@@ -35,13 +37,13 @@ export default function HomePage() {
                   {user.name} · {ROLE_LABELS[user.role] ?? user.role}
                 </span>
                 <Button variant="outline" size="sm" onClick={logout}>
-                  Sign Out
+                  {t('home.signOut')}
                 </Button>
               </div>
             ) : (
               <Link to="/register">
                 <Button size="sm" icon="person_add">
-                  Register
+                  {t('home.register')}
                 </Button>
               </Link>
             )}
@@ -53,15 +55,15 @@ export default function HomePage() {
         <div className="bg-primary text-on-primary">
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-3 flex flex-wrap items-center gap-3 text-body-md">
             <span className="material-symbols-outlined">verified</span>
-            <span className="font-semibold">Welcome back, {user.name}!</span>
-            <span className="opacity-80">Signed in as {ROLE_LABELS[user.role] ?? user.role}.</span>
+            <span className="font-semibold">{t('home.welcomeBack', { name: user.name })}</span>
+            <span className="opacity-80">{t('home.signedInAs', { role: ROLE_LABELS[user.role] ?? user.role })}</span>
             {ROLE_PORTAL[user.role] && (
               <Link to={ROLE_PORTAL[user.role]} className="text-on-primary underline underline-offset-2 hover:opacity-80">
-                Go to your dashboard
+                {t('home.goToDashboard')}
               </Link>
             )}
             <Link to="/register" className="ml-auto text-on-primary underline underline-offset-2 hover:opacity-80">
-              Register another account
+              {t('home.registerAnother')}
             </Link>
           </div>
         </div>
@@ -72,24 +74,23 @@ export default function HomePage() {
           <div className="max-w-6xl mx-auto px-4 md:px-8 py-20 md:py-28 text-center text-on-primary relative z-10">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur text-label-md font-semibold mb-6">
               <span className="material-symbols-outlined text-primary-fixed">health_and_safety</span>
-              Rural Community Care Platform
+              {t('home.platformBadge')}
             </span>
             <h1 className="font-headline text-headline-2xl md:text-6xl font-bold max-w-3xl mx-auto leading-tight">
-              Healthcare that reaches every doorstep.
+              {t('home.heroTitle')}
             </h1>
             <p className="text-body-lg opacity-90 max-w-2xl mx-auto mt-6">
-              {APP_NAME} brings doctors, patients, NGOs and government together for
-              seamless, evidence-based rural care.
+              {t('home.heroText', { app: APP_NAME })}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 mt-10">
               <Link to="/register">
                 <Button size="lg" icon="person_add" iconPosition="right" className="bg-white text-primary hover:bg-primary-fixed">
-                  Create an Account
+                  {t('home.createAccount')}
                 </Button>
               </Link>
               <Link to="/login">
                 <Button size="lg" variant="outline" className="bg-white text-primary hover:bg-primary-fixed border-white/40">
-                  Sign In
+                  {t('home.signIn')}
                 </Button>
               </Link>
             </div>
@@ -98,16 +99,15 @@ export default function HomePage() {
 
         <section className="max-w-6xl mx-auto px-4 md:px-8 py-16 md:py-20">
           <div className="text-center mb-12">
-            <h2 className="font-headline text-headline-lg font-bold">Join the platform</h2>
+            <h2 className="font-headline text-headline-lg font-bold">{t('home.joinPlatform')}</h2>
             <p className="text-on-surface-variant mt-3 max-w-xl mx-auto">
-              Choose your role and register in under a minute. Each role gets a
-              dedicated workspace tailored to your work.
+              {t('home.joinPlatformText')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {REGISTRATION_ROLES.map((role) => {
-              const { label, icon, description, color } = ROLE_META[role];
+              const { icon, color } = ROLE_META[role];
               return (
                 <Link
                   key={role}
@@ -119,12 +119,12 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h3 className="font-headline text-title-md font-bold group-hover:text-primary transition-colors">
-                      {label}
+                      {t(`role.${role}`)}
                     </h3>
-                    <p className="text-body-sm text-on-surface-variant mt-1.5 leading-relaxed">{description}</p>
+                    <p className="text-body-sm text-on-surface-variant mt-1.5 leading-relaxed">{t(`role.${role}Desc`)}</p>
                   </div>
                   <span className="mt-auto inline-flex items-center gap-1 text-label-md font-bold text-primary">
-                    Register as {label}
+                    {t('home.registerAs', { label: t(`role.${role}`) })}
                     <span className="material-symbols-outlined text-[18px] transition-transform group-hover:translate-x-1">arrow_forward</span>
                   </span>
                 </Link>
@@ -138,18 +138,18 @@ export default function HomePage() {
             {[
               {
                 icon: 'vaccines',
-                title: 'Vaccination & Camps',
-                text: 'Plan and track vaccination drives and screening camps across villages.',
+                title: t('home.featureVaccinationTitle'),
+                text: t('home.featureVaccinationText'),
               },
               {
                 icon: 'public_health',
-                title: 'Disease Surveillance',
-                text: 'Spot clusters early and alert officials before outbreaks spread.',
+                title: t('home.featureSurveillanceTitle'),
+                text: t('home.featureSurveillanceText'),
               },
               {
                 icon: 'monitoring',
-                title: 'Live Analytics',
-                text: 'Evidence-based dashboards for doctors, NGOs and government.',
+                title: t('home.featureAnalyticsTitle'),
+                text: t('home.featureAnalyticsText'),
               },
             ].map(({ icon, title, text }) => (
               <div key={title} className="flex gap-4">
@@ -168,15 +168,15 @@ export default function HomePage() {
 
       <footer className="border-t border-outline-variant/40">
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-label-md text-on-surface-variant">
-          <p>© {new Date().getFullYear()} {APP_NAME}. Rural Community Care Initiative.</p>
+          <p>{t('app.legal', { year: new Date().getFullYear(), app: APP_NAME })}</p>
           <div className="flex items-center gap-6 flex-wrap justify-center">
             {HOME_LINKS.map((link) => (
               <Link key={link.to} to={link.to} className="hover:text-primary transition-colors">
-                {link.label}
+                {t(`home.${link.labelKey}`)}
               </Link>
             ))}
             <Link to="/register" className="hover:text-primary transition-colors">
-              Register
+              {t('home.register')}
             </Link>
           </div>
         </div>

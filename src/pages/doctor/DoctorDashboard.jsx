@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import NotificationBell from '../../components/layout/NotificationBell';
 import ProfileMenu from '../../components/layout/ProfileMenu';
@@ -15,16 +16,17 @@ import { useAuth } from '../../hooks/useAuth';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
-    { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
-    { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call' },
-    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
-    { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
+    { labelKey: 'dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'patientQueue', to: '/doctor/queue', icon: 'groups' },
+    { labelKey: 'liveConsultation', to: '/doctor/consultation', icon: 'call' },
+    { labelKey: 'consultationHistory', to: '/doctor/consultation-history', icon: 'video_library' },
+    { labelKey: 'performanceAnalytics', to: '/doctor/performance', icon: 'query_stats' },
   ],
 };
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,7 @@ export default function DoctorDashboard() {
   }, []);
 
   const highRisk = patients.filter((p) => p.risk === 'Critical').slice(0, 4);
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
 
   const headerRight = (
     <>
@@ -53,7 +56,7 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <DashboardLayout sidebarProps={SIDEBAR} headerProps={{ title: 'Dashboard', subtitle: 'Overview', right: headerRight }}>
+      <DashboardLayout sidebarProps={{ items: sidebarItems }} headerProps={{ title: t('nav.dashboard'), subtitle: t('doctor.overview'), right: headerRight }}>
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         </div>
@@ -63,44 +66,44 @@ export default function DoctorDashboard() {
 
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: `Welcome back, ${user?.name ?? 'Doctor'}`, subtitle: 'Here is your overview for today', right: headerRight }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('doctor.welcomeBack', { name: user?.name ?? t('role.doctor') }), subtitle: t('doctor.overviewToday'), right: headerRight }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <KPIWidget label="Patients Today" value={stats.patientsToday} icon="people" color="primary" trend={12} />
-        <KPIWidget label="Total Patients" value={stats.totalPatients.toLocaleString()} icon="group" color="secondary" trend={5} />
-        <KPIWidget label="Urgent Cases" value={stats.urgentCases} icon="warning" color="error" trend={-3} />
-        <KPIWidget label="Avg Response Time" value={stats.avgResponse} unit="" icon="timer" color="tertiary" trend={8} />
+        <KPIWidget label={t('doctor.patientsToday')} value={stats.patientsToday} icon="people" color="primary" trend={12} />
+        <KPIWidget label={t('doctor.totalPatients')} value={stats.totalPatients.toLocaleString()} icon="group" color="secondary" trend={5} />
+        <KPIWidget label={t('doctor.urgentCases')} value={stats.urgentCases} icon="warning" color="error" trend={-3} />
+        <KPIWidget label={t('doctor.avgResponseTime')} value={stats.avgResponse} unit="" icon="timer" color="tertiary" trend={8} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card
-          title="Consultation Trends"
-          subtitle="This week"
+          title={t('doctor.consultationTrends')}
+          subtitle={t('doctor.thisWeek')}
           className="lg:col-span-2"
           headerRight={
             <select className="bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-label-md">
-              <option>Weekly</option>
-              <option>Monthly</option>
+              <option>{t('doctor.weekly')}</option>
+              <option>{t('doctor.monthly')}</option>
             </select>
           }
         >
-          <LineChart labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']} data={stats.consultations} height={280} />
+          <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), 'Sat', 'Sun']} data={stats.consultations} height={280} />
         </Card>
 
-        <Card title="Outcome Distribution" subtitle="Treatments resolved vs referred">
+        <Card title={t('doctor.outcomeDistribution')} subtitle={t('doctor.resolvedVsReferred')}>
           <PieChart
-            labels={['Resolved', 'Referred', 'Follow-up']}
+            labels={[t('doctor.resolved'), t('doctor.referred'), t('doctor.followUp')]}
             data={stats.outcomes}
             colors={['#1B5E4F', '#C8B900', '#E8734A']}
             height={220}
           />
           <div className="flex flex-col gap-3 mt-4">
-            {['Resolved', 'Referred', 'Follow-up'].map((label, i) => (
-              <div key={label} className="flex items-center justify-between">
+            {['resolved', 'referred', 'followUp'].map((key, i) => (
+              <div key={key} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full" style={{ background: ['#1B5E4F', '#C8B900', '#E8734A'][i] }} />
-                  <span className="text-label-md text-on-surface-variant">{label}</span>
+                  <span className="text-label-md text-on-surface-variant">{t(`doctor.${key}`)}</span>
                 </div>
                 <span className="font-bold text-on-surface">{stats.outcomes[i]}</span>
               </div>
@@ -110,11 +113,11 @@ export default function DoctorDashboard() {
       </div>
 
       <Card
-        title="Priority Patient Queue"
-        subtitle="Patients needing attention"
+        title={t('doctor.priorityQueue')}
+        subtitle={t('doctor.patientsNeedingAttention')}
         headerRight={
           <Link to="/doctor/queue">
-            <Button variant="outline" size="sm">View Full Queue</Button>
+            <Button variant="outline" size="sm">{t('doctor.viewFullQueue')}</Button>
           </Link>
         }
       >
@@ -122,12 +125,12 @@ export default function DoctorDashboard() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-primary text-on-primary">
-                <th className="px-6 py-3 font-headline font-semibold">Patient ID</th>
-                <th className="px-6 py-3 font-headline font-semibold">Name</th>
-                <th className="px-6 py-3 font-headline font-semibold">Complaint</th>
-                <th className="px-6 py-3 font-headline font-semibold">Status</th>
-                <th className="px-6 py-3 font-headline font-semibold">Risk</th>
-                <th className="px-6 py-3 font-headline font-semibold">Action</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('doctor.patientId')}</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('common.name')}</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('doctor.complaint')}</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('common.status')}</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('common.risk')}</th>
+                <th className="px-6 py-3 font-headline font-semibold">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -137,14 +140,18 @@ export default function DoctorDashboard() {
                   <td className="px-6 py-3 font-semibold">{p.name}</td>
                   <td className="px-6 py-3 text-on-surface-variant max-w-[260px] truncate">{p.complaint}</td>
                   <td className="px-6 py-3">
-                    <Badge variant={p.status === 'Waiting' ? 'warning' : 'neutral'}>{p.status}</Badge>
+                    <Badge variant={p.status === 'Waiting' ? 'warning' : 'neutral'}>
+                      {p.status === 'Waiting' ? t('queue.waiting') : p.status === 'In Review' ? t('queue.inReview') : p.status}
+                    </Badge>
                   </td>
                   <td className="px-6 py-3">
-                    <Badge variant={p.risk === 'Critical' ? 'critical' : p.risk === 'Moderate' ? 'warning' : 'success'}>{p.risk}</Badge>
+                    <Badge variant={p.risk === 'Critical' ? 'critical' : p.risk === 'Moderate' ? 'warning' : 'success'}>
+                      {t(`queue.${p.risk.toLowerCase()}`)}
+                    </Badge>
                   </td>
                   <td className="px-6 py-3">
                     <Link to={`/doctor/case/${p.id}`}>
-                      <Button size="sm">View Case</Button>
+                      <Button size="sm">{t('doctor.viewCase')}</Button>
                     </Link>
                   </td>
                 </tr>

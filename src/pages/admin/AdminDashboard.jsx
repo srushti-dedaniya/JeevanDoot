@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -14,18 +15,19 @@ import { reportService } from '../../services/reportService';
 
 const SIDEBAR = {
   items: [
-    { label: 'Dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
-    { label: 'Disease Surveillance', to: '/admin/surveillance', icon: 'public_health' },
-    { label: 'Case-Level Analytics', to: '/admin/case-analytics', icon: 'analytics' },
-    { label: 'Audit Log', to: '/admin/audit-log', icon: 'verified_user' },
-    { label: 'Report Generation', to: '/admin/reports', icon: 'summarize' },
-    { label: 'Doctor Management', to: '/admin/doctors', icon: 'medical_services' },
-    { label: 'CHW Management', to: '/admin/chws', icon: 'volunteer_activism' },
-    { label: 'Configuration', to: '/admin/settings', icon: 'settings' },
+    { labelKey: 'dashboard', to: '/admin/dashboard', icon: 'dashboard', end: true },
+    { labelKey: 'diseaseSurveillance', to: '/admin/surveillance', icon: 'public_health' },
+    { labelKey: 'caseAnalytics', to: '/admin/case-analytics', icon: 'analytics' },
+    { labelKey: 'auditLog', to: '/admin/audit-log', icon: 'verified_user' },
+    { labelKey: 'reportGeneration', to: '/admin/reports', icon: 'summarize' },
+    { labelKey: 'doctorManagement', to: '/admin/doctors', icon: 'medical_services' },
+    { labelKey: 'chwManagement', to: '/admin/chws', icon: 'volunteer_activism' },
+    { labelKey: 'configuration', to: '/admin/settings', icon: 'settings' },
   ],
 };
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState(null);
   const [surveillance, setSurveillance] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
@@ -46,17 +48,19 @@ export default function AdminDashboard() {
     load();
   }, []);
 
+  const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
+
   const kpis = [
-    { label: 'Total Consultations', value: '8,241', icon: 'monitoring', color: 'primary', trend: 12 },
-    { label: 'Active Patients', value: '2,340', icon: 'group', color: 'secondary', trend: 6 },
-    { label: 'Disease Outbreaks', value: surveillance?.activeOutbreaks ?? '—', icon: 'public_health', color: 'error', trend: -4 },
-    { label: 'Resolution Rate', value: '94.2%', icon: 'verified', color: 'tertiary', trend: 2 },
+    { label: t('admin.totalConsultations'), value: '8,241', icon: 'monitoring', color: 'primary', trend: 12 },
+    { label: t('admin.activePatients'), value: '2,340', icon: 'group', color: 'secondary', trend: 6 },
+    { label: t('admin.diseaseOutbreaks'), value: surveillance?.activeOutbreaks ?? '—', icon: 'public_health', color: 'error', trend: -4 },
+    { label: t('admin.resolutionRate'), value: '94.2%', icon: 'verified', color: 'tertiary', trend: 2 },
   ];
 
   return (
     <DashboardLayout
-      sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Admin Dashboard', subtitle: 'District health overview' }}
+      sidebarProps={{ items: sidebarItems }}
+      headerProps={{ title: t('admin.title'), subtitle: t('admin.subtitle') }}
     >
       {loading ? (
         <div className="flex justify-center py-20">
@@ -71,21 +75,21 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card title="Consultation Volume" subtitle="Last 7 days" className="lg:col-span-2">
+            <Card title={t('admin.consultationVolume')} subtitle={t('admin.last7Days')} className="lg:col-span-2">
               <LineChart labels={['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']} data={stats.consultations} height={280} />
             </Card>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card title="Case Distribution" subtitle="By risk category">
+            <Card title={t('admin.caseDistribution')} subtitle={t('admin.byRiskCategory')}>
               <PieChart
-                labels={['Low', 'Moderate', 'High', 'Critical']}
+                labels={[t('queue.low'), t('queue.moderate'), t('queue.high'), t('queue.critical')]}
                 data={[1200, 640, 210, 60]}
                 colors={['#1B5E4F', '#7C5800', '#722000', '#BA1A1A']}
                 height={220}
               />
             </Card>
-            <Card title="Region Workload" subtitle="Cases per region">
+            <Card title={t('admin.regionWorkload')} subtitle={t('admin.casesPerRegion')}>
               <BarChart
                 labels={['Amroli', 'Palia', 'Devgram', 'Kanker', 'Bijapur']}
                 data={[320, 280, 195, 240, 150]}
@@ -94,30 +98,30 @@ export default function AdminDashboard() {
                 horizontal
               />
             </Card>
-            <Card title="Outbreaks" subtitle="Active clusters">
+            <Card title={t('admin.outbreaks')} subtitle={t('admin.activeClusters')}>
               <div className="space-y-3">
                 {(surveillance?.regions ?? []).map((r) => (
                   <div key={r.name} className="flex items-center justify-between bg-surface-container-low rounded-lg p-3">
                     <div>
                       <p className="font-bold text-on-surface text-sm">{r.name}</p>
-                      <p className="text-label-sm text-on-surface-variant">{r.disease} · Stage {r.stage}</p>
+                      <p className="text-label-sm text-on-surface-variant">{r.disease} · {t('admin.stage', { count: r.stage })}</p>
                     </div>
-                    <Badge variant={r.stage >= 2 ? 'critical' : 'warning'}>{r.newCases} new</Badge>
+                    <Badge variant={r.stage >= 2 ? 'critical' : 'warning'}>{t('admin.newCases', { count: r.newCases })}</Badge>
                   </div>
                 ))}
                 <Link to="/admin/surveillance">
-                  <Button variant="outline" fullWidth size="sm">View Surveillance</Button>
+                  <Button variant="outline" fullWidth size="sm">{t('admin.viewSurveillance')}</Button>
                 </Link>
               </div>
             </Card>
           </div>
 
           <Card
-            title="High-Risk Audit Trail"
-            subtitle="Recent escalations"
+            title={t('admin.highRiskAuditTrail')}
+            subtitle={t('admin.recentEscalations')}
             headerRight={
               <Link to="/admin/audit-log">
-                <Button variant="outline" size="sm">View Full Log</Button>
+                <Button variant="outline" size="sm">{t('admin.viewFullLog')}</Button>
               </Link>
             }
           >
@@ -125,11 +129,11 @@ export default function AdminDashboard() {
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-primary text-on-primary">
-                    <th className="px-6 py-3 font-headline font-semibold">Timestamp</th>
-                    <th className="px-6 py-3 font-headline font-semibold">Patient ID</th>
-                    <th className="px-6 py-3 font-headline font-semibold">Risk</th>
-                    <th className="px-6 py-3 font-headline font-semibold">Handled By</th>
-                    <th className="px-6 py-3 font-headline font-semibold">Outcome</th>
+                    <th className="px-6 py-3 font-headline font-semibold">{t('admin.timestamp')}</th>
+                    <th className="px-6 py-3 font-headline font-semibold">{t('referral.patientId')}</th>
+                    <th className="px-6 py-3 font-headline font-semibold">{t('common.risk')}</th>
+                    <th className="px-6 py-3 font-headline font-semibold">{t('admin.handledBy')}</th>
+                    <th className="px-6 py-3 font-headline font-semibold">{t('admin.outcome')}</th>
                   </tr>
                 </thead>
                 <tbody>

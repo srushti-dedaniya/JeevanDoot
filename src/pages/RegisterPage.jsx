@@ -4,6 +4,7 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import { useAuth } from '../hooks/useAuth';
 import { useNotification } from '../hooks/useNotification';
+import { useTranslation } from 'react-i18next';
 import { APP_NAME, REGISTRATION_ROLES, ROLE_META, ROLE_PORTAL } from '../utils/constants';
 
 export default function RegisterPage() {
@@ -25,18 +26,19 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const { notify } = useNotification();
+  const { t } = useTranslation();
 
   const update = (field) => (e) => setForm((prev) => ({ ...prev, [field]: e.target.value }));
 
   const validate = () => {
     const next = {};
-    if (!form.name.trim()) next.name = 'Full name is required';
-    if (!form.email.trim()) next.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = 'Enter a valid email';
-    if (form.phone && !/^[0-9+\-\s]{7,15}$/.test(form.phone)) next.phone = 'Enter a valid phone number';
-    if (!form.password) next.password = 'Password is required';
-    else if (form.password.length < 8) next.password = 'Password must be at least 8 characters';
-    if (form.confirmPassword !== form.password) next.confirmPassword = 'Passwords do not match';
+    if (!form.name.trim()) next.name = t('auth.fullNameRequired');
+    if (!form.email.trim()) next.email = t('auth.emailRequired');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) next.email = t('auth.emailInvalid');
+    if (form.phone && !/^[0-9+\-\s]{7,15}$/.test(form.phone)) next.phone = t('auth.phoneInvalid');
+    if (!form.password) next.password = t('auth.passwordRequired');
+    else if (form.password.length < 8) next.password = t('auth.passwordMinChars');
+    if (form.confirmPassword !== form.password) next.confirmPassword = t('auth.passwordsDoNotMatch');
     return next;
   };
 
@@ -55,7 +57,7 @@ export default function RegisterPage() {
     });
     setLoading(false);
 
-    notify({ type: 'success', message: 'Account created successfully. Welcome!' });
+    notify({ type: 'success', message: t('auth.accountCreated') });
     navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
   };
 
@@ -68,8 +70,8 @@ export default function RegisterPage() {
               <img src="/logo.svg" alt={`${APP_NAME} logo`} className="w-7 h-7" />
             </div>
             <div className="leading-tight">
-              <p className="font-headline text-title-md font-bold">{APP_NAME}</p>
-              <p className="text-label-sm text-on-surface-variant">Create an account</p>
+              <p className="font-headline text-title-md font-bold">{t('app.name')}</p>
+              <p className="text-label-sm text-on-surface-variant">{t('auth.createAnAccount')}</p>
             </div>
           </Link>
           <div className="flex items-center gap-2">
@@ -77,7 +79,7 @@ export default function RegisterPage() {
               to="/login"
               className="hidden sm:inline-flex px-3 py-2 rounded-lg text-label-md font-semibold text-on-surface-variant hover:text-primary hover:bg-primary-fixed/30 transition-colors"
             >
-              Sign In
+              {t('auth.signIn')}
             </Link>
           </div>
         </div>
@@ -85,18 +87,18 @@ export default function RegisterPage() {
 
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-10 md:py-14">
         <div className="text-center mb-10">
-          <h1 className="font-headline text-headline-xl font-bold">Register for {APP_NAME}</h1>
+          <h1 className="font-headline text-headline-xl font-bold">{t('auth.registerFor', { app: APP_NAME })}</h1>
           <p className="text-on-surface-variant mt-2">
-            Select your role, then fill in your details to get started.
+            {t('auth.registerSubtitle')}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="bg-surface-container-lowest rounded-xl card-shadow border border-outline-variant/20 p-6 md:p-10 space-y-8">
           <fieldset>
-            <legend className="text-label-lg font-bold mb-4">1 · Choose your role</legend>
+            <legend className="text-label-lg font-bold mb-4">{t('auth.chooseYourRole')}</legend>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {REGISTRATION_ROLES.map((value) => {
-                const { icon, label, description } = ROLE_META[value];
+                const { icon } = ROLE_META[value];
                 const selected = role === value;
                 return (
                   <button
@@ -119,10 +121,10 @@ export default function RegisterPage() {
                       </span>
                       <span>
                         <span className={`block font-bold ${selected ? 'text-primary' : 'text-on-surface'}`}>
-                          {label}
+                          {t(`role.${value}`)}
                         </span>
                         <span className="block text-label-sm text-on-surface-variant mt-0.5">
-                          {description}
+                          {t(`role.${value}Desc`)}
                         </span>
                       </span>
                     </span>
@@ -133,33 +135,33 @@ export default function RegisterPage() {
           </fieldset>
 
           <fieldset className="space-y-5">
-            <legend className="text-label-lg font-bold">2 · Your details</legend>
+            <legend className="text-label-lg font-bold">{t('auth.yourDetails')}</legend>
             <Input
-              label="Full name"
+              label={t('auth.fullName')}
               value={form.name}
               onChange={update('name')}
-              placeholder="e.g. Aarav Mehta"
+              placeholder={t('auth.fullNamePlaceholder')}
               icon="badge"
               error={errors.name}
               autoComplete="name"
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Input
-                label="Email address"
+                label={t('auth.email')}
                 type="email"
                 value={form.email}
                 onChange={update('email')}
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 icon="mail"
                 error={errors.email}
                 autoComplete="email"
               />
               <Input
-                label="Phone number (optional)"
+                label={t('auth.phoneOptional')}
                 type="tel"
                 value={form.phone}
                 onChange={update('phone')}
-                placeholder="+91 98765 43210"
+                placeholder={t('auth.phonePlaceholder')}
                 icon="call"
                 error={errors.phone}
                 autoComplete="tel"
@@ -167,11 +169,11 @@ export default function RegisterPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <Input
-                label="Password"
+                label={t('auth.password')}
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={update('password')}
-                placeholder="At least 8 characters"
+                placeholder={t('auth.passwordMin')}
                 icon="lock"
                 error={errors.password}
                 autoComplete="new-password"
@@ -180,7 +182,7 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
                     className="text-on-surface-variant hover:text-primary"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-label={showPassword ? t('auth.hidePassword') : t('auth.showPassword')}
                   >
                     <span className="material-symbols-outlined">
                       {showPassword ? 'visibility_off' : 'visibility'}
@@ -189,11 +191,11 @@ export default function RegisterPage() {
                 }
               />
               <Input
-                label="Confirm password"
+                label={t('auth.confirmPassword')}
                 type={showPassword ? 'text' : 'password'}
                 value={form.confirmPassword}
                 onChange={update('confirmPassword')}
-                placeholder="Re-enter your password"
+                placeholder={t('auth.reEnterPassword')}
                 icon="lock"
                 error={errors.confirmPassword}
                 autoComplete="new-password"
@@ -203,12 +205,12 @@ export default function RegisterPage() {
 
           <div className="pt-2">
             <Button type="submit" fullWidth size="lg" loading={loading} icon="person_add">
-              Create Account
+              {t('auth.createAccount')}
             </Button>
             <p className="text-center text-label-md text-on-surface-variant mt-4">
-              Already have an account?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <Link to="/login" className="font-bold text-primary hover:underline">
-                Sign in
+                {t('auth.signInLink')}
               </Link>
             </p>
           </div>

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import Button from '../components/common/Button';
+import { useTranslation } from 'react-i18next';
 import { APP_NAME, REGISTRATION_ROLES, ROLE_META } from '../utils/constants';
 
 export default function SignInPage() {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface">
       <nav className="sticky top-0 z-40 bg-surface-container-lowest/90 backdrop-blur border-b border-outline-variant/40">
@@ -12,13 +14,13 @@ export default function SignInPage() {
               <img src="/logo.svg" alt={`${APP_NAME} logo`} className="w-7 h-7" />
             </div>
             <div className="leading-tight">
-              <p className="font-headline text-title-md font-bold">{APP_NAME}</p>
-              <p className="text-label-sm text-on-surface-variant">Sign in</p>
+              <p className="font-headline text-title-md font-bold">{t('app.name')}</p>
+              <p className="text-label-sm text-on-surface-variant">{t('auth.signIn')}</p>
             </div>
           </Link>
           <Link to="/register">
             <Button size="sm" icon="person_add">
-              Register
+              {t('auth.register')}
             </Button>
           </Link>
         </div>
@@ -26,8 +28,8 @@ export default function SignInPage() {
 
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-10 md:py-16">
         <div className="text-center mb-10">
-          <h1 className="font-headline text-headline-xl font-bold">Sign in to {APP_NAME}</h1>
-          <p className="text-on-surface-variant mt-2">Choose your role to continue</p>
+          <h1 className="font-headline text-headline-xl font-bold">{t('auth.signInTo', { app: APP_NAME })}</h1>
+          <p className="text-on-surface-variant mt-2">{t('auth.chooseRole')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -44,10 +46,10 @@ export default function SignInPage() {
                 </span>
                 <span className="flex-1">
                   <span className="block font-headline text-title-md font-bold group-hover:text-primary transition-colors">
-                    {meta.label}
+                    {t(`role.${role}`)}
                   </span>
                   <span className="block text-label-sm text-on-surface-variant mt-0.5">
-                    {meta.description}
+                    {t(`role.${role}Desc`)}
                   </span>
                 </span>
                 <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">
@@ -60,14 +62,14 @@ export default function SignInPage() {
 
         <div className="text-center mt-10 space-y-2 text-label-md">
           <p className="text-on-surface-variant">
-            New to {APP_NAME}?{' '}
+            {t('auth.newTo', { app: APP_NAME })}{' '}
             <Link to="/register" className="font-bold text-primary hover:underline">
-              Create an account
+              {t('auth.createAnAccount')}
             </Link>
           </p>
           <p>
             <Link to="/admin/login" className="text-on-surface-variant hover:text-primary transition-colors">
-              Administrator? Sign in here
+              {t('auth.administrator')}
             </Link>
           </p>
         </div>

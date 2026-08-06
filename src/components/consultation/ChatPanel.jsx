@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from '../common/Button';
 import { cx } from '../../utils/helpers';
 
@@ -6,6 +7,7 @@ import { cx } from '../../utils/helpers';
  * ChatPanel - mock in-call chat with the remote physician.
  */
 export default function ChatPanel({ onSend }) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState([
     { from: 'doctor', text: 'Namaste doctor ji, I can see the ECG now. ST elevation in leads II, III and aVF is concerning.' },
     { from: 'self', text: 'Yes, I suspected an inferior wall MI. Vitals: BP 96/58, HR 112.' },
@@ -28,10 +30,10 @@ export default function ChatPanel({ onSend }) {
           R
         </div>
         <div>
-          <p className="font-bold text-on-surface">Dr. Rajesh Khanna</p>
+          <p className="font-bold text-on-surface">{t('chat.doctorName')}</p>
           <p className="text-label-sm text-success flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-success inline-block" />
-            Online
+            {t('chat.online')}
           </p>
         </div>
       </div>

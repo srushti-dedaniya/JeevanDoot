@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cx } from '../../utils/helpers';
 import { useClickOutside } from '../../hooks/useClickOutside';
 
@@ -7,45 +8,45 @@ const STORAGE_KEY = 'jd_notifications';
 const SAMPLE_NOTIFICATIONS = [
   {
     id: 'n1',
-    title: 'New patient assigned',
-    description: 'Gopal Prasad (JD-1209) added to your queue',
-    time: '5 min ago',
+    titleKey: 'n1Title',
+    descKey: 'n1Desc',
+    timeKey: 'n1Time',
     icon: 'person_add',
     tone: 'primary',
     unread: true,
   },
   {
     id: 'n2',
-    title: 'Follow-up reminder for Arjun Singh',
-    description: 'Follow-up scheduled for today at 4:00 PM',
-    time: '20 min ago',
+    titleKey: 'n2Title',
+    descKey: 'n2Desc',
+    timeKey: 'n2Time',
     icon: 'event_available',
     tone: 'secondary',
     unread: true,
   },
   {
     id: 'n3',
-    title: 'Referral request received',
-    description: 'Rajesh Kumar referred to Cardiology',
-    time: '1 hour ago',
+    titleKey: 'n3Title',
+    descKey: 'n3Desc',
+    timeKey: 'n3Time',
     icon: 'emergency_home',
     tone: 'tertiary',
     unread: true,
   },
   {
     id: 'n4',
-    title: 'Prescription successfully generated',
-    description: 'Prescription for Meera Sharma saved',
-    time: '2 hours ago',
+    titleKey: 'n4Title',
+    descKey: 'n4Desc',
+    timeKey: 'n4Time',
     icon: 'description',
     tone: 'success',
     unread: false,
   },
   {
     id: 'n5',
-    title: 'Upcoming consultation in 15 minutes',
-    description: 'Teleconsultation with Laxmi Verma',
-    time: '3 hours ago',
+    titleKey: 'n5Title',
+    descKey: 'n5Desc',
+    timeKey: 'n5Time',
     icon: 'videocam',
     tone: 'primary',
     unread: false,
@@ -70,11 +71,19 @@ const loadNotifications = () => {
 };
 
 export default function NotificationBell() {
+  const { t } = useTranslation();
   const [notifications, setNotifications] = useState(loadNotifications);
   const [open, setOpen] = useState(false);
   const ref = useClickOutside(() => setOpen(false), open);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const translatedNotifications = notifications.map((n) => ({
+    ...n,
+    title: n.titleKey ? t(`notifications.${n.titleKey}`) : n.title,
+    description: n.descKey ? t(`notifications.${n.descKey}`) : n.description,
+    time: n.timeKey ? t(`notifications.${n.timeKey}`) : n.time,
+  }));
 
   useEffect(() => {
     try {
@@ -100,7 +109,7 @@ export default function NotificationBell() {
         type="button"
         onClick={() => setOpen((o) => !o)}
         className="relative p-2 text-on-surface-variant hover:text-primary rounded-full transition-colors"
-        aria-label="Notifications"
+        aria-label={t('notifications.title')}
         aria-expanded={open}
       >
         <span className="material-symbols-outlined">notifications</span>
@@ -116,7 +125,7 @@ export default function NotificationBell() {
           <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant bg-surface-container-low">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-lg">notifications</span>
-              <p className="font-bold text-on-surface text-sm">Notifications</p>
+              <p className="font-bold text-on-surface text-sm">{t('notifications.title')}</p>
               {unreadCount > 0 && (
                 <span className="bg-primary text-on-primary text-label-sm font-bold px-1.5 py-0.5 rounded-full">
                   {unreadCount}
@@ -129,13 +138,13 @@ export default function NotificationBell() {
                 onClick={markAllRead}
                 className="text-label-md text-primary hover:underline"
               >
-                Mark all read
+                {t('notifications.markAllRead')}
               </button>
             )}
           </div>
 
           <div className="max-h-80 overflow-y-auto custom-scrollbar">
-            {notifications.map((n) => (
+            {translatedNotifications.map((n) => (
               <button
                 key={n.id}
                 type="button"

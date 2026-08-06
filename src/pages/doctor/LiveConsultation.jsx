@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../../components/layout/DashboardLayout';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -34,25 +35,15 @@ import {
   sanitizeRecordingName,
 } from '../../utils/recordingUtils';
 
-const SIDEBAR = {
-  items: [
-    { label: 'Dashboard', to: '/doctor/dashboard', icon: 'dashboard', end: true },
-    { label: 'Patient Queue', to: '/doctor/queue', icon: 'groups' },
-    { label: 'Live Consultation', to: '/doctor/consultation', icon: 'call', end: true },
-    { label: 'Consultation History', to: '/doctor/consultation-history', icon: 'video_library' },
-    { label: 'Performance Analytics', to: '/doctor/performance', icon: 'query_stats' },
-  ],
-};
-
 const ACTIVE_SESSION_KEY = 'jd_active_session_id';
 const FALLBACK_CONSULTATION_ID = 'sess-demo';
 
 const AI_ASSISTANTS = [
-  { id: 'medicine', label: 'Medicine Recommendation AI', icon: 'medication', status: 'ready', statusLabel: 'Active', note: 'Aspirin 300mg + Nitroglycerin 0.4mg suggested' },
-  { id: 'disease', label: 'Disease Prediction AI', icon: 'biotech', status: 'alert', statusLabel: 'High Risk', note: 'Inferior wall MI probability: 0.86' },
-  { id: 'interaction', label: 'Drug Interaction Warning', icon: 'warning', status: 'ok', statusLabel: 'Clear', note: 'No critical interactions detected' },
-  { id: 'risk', label: 'High Risk Alert', icon: 'priority_high', status: 'critical', statusLabel: 'Critical', note: 'Critical vitals — emergency referral recommended' },
-  { id: 'emergency', label: 'Emergency Detection', icon: 'emergency', status: 'idle', statusLabel: 'Monitoring', note: 'Watching vitals for acute deterioration' },
+  { id: 'medicine', labelKey: 'consultation.medicineAi', icon: 'medication', status: 'ready', statusKey: 'consultation.statusActive', noteKey: 'consultation.aiMedicineNote' },
+  { id: 'disease', labelKey: 'consultation.diseaseAi', icon: 'biotech', status: 'alert', statusKey: 'consultation.statusHighRisk', noteKey: 'consultation.aiDiseaseNote' },
+  { id: 'interaction', labelKey: 'consultation.interactionAi', icon: 'warning', status: 'ok', statusKey: 'consultation.statusClear', noteKey: 'consultation.aiInteractionNote' },
+  { id: 'risk', labelKey: 'consultation.riskAi', icon: 'priority_high', status: 'critical', statusKey: 'consultation.statusCritical', noteKey: 'consultation.aiRiskNote' },
+  { id: 'emergency', labelKey: 'consultation.emergencyAi', icon: 'emergency', status: 'idle', statusKey: 'consultation.statusMonitoring', noteKey: 'consultation.aiEmergencyNote' },
 ];
 
 const AI_STATUS_VARIANT = {
@@ -67,6 +58,16 @@ export default function LiveConsultation() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { notify } = useNotification();
+  const { t } = useTranslation();
+  const SIDEBAR = {
+    items: [
+      { label: t('nav.dashboard'), to: '/doctor/dashboard', icon: 'dashboard', end: true },
+      { label: t('nav.patientQueue'), to: '/doctor/queue', icon: 'groups' },
+      { label: t('nav.liveConsultation'), to: '/doctor/consultation', icon: 'call', end: true },
+      { label: t('nav.consultationHistory'), to: '/doctor/consultation-history', icon: 'video_library' },
+      { label: t('nav.performanceAnalytics'), to: '/doctor/performance', icon: 'query_stats' },
+    ],
+  };
   const [patient, setPatient] = useState(null);
   const [session, setSession] = useState(null);
   const [notes, setNotes] = useState('');
@@ -109,7 +110,7 @@ export default function LiveConsultation() {
     sessionStartRef.current = Date.now();
     sessionStorage.setItem(ACTIVE_SESSION_KEY, s.sessionId);
     setLiveTranscript(SIMULATED_TRANSCRIPT);
-    notify({ type: 'info', message: `Consultation session ${s.sessionId} started` });
+    notify({ type: 'info', message: t('consultation.sessionStarted', { id: s.sessionId }) });
   };
 
   const endSession = async () => {
@@ -134,7 +135,7 @@ export default function LiveConsultation() {
     sessionStorage.removeItem(ACTIVE_SESSION_KEY);
     setSummary(summaryData);
     setEnded(true);
-    notify({ type: 'success', message: 'Consultation ended. Summary saved.' });
+    notify({ type: 'success', message: t('consultation.endedSaved') });
   };
 
   const updateSection = (id, value) => {
@@ -145,12 +146,12 @@ export default function LiveConsultation() {
 
   const regenerateSections = () => {
     setSections(createScribeSections(notes));
-    toast.success('AI scribe sections regenerated from transcript.');
+    toast.success(t('consultation.regenerated'));
   };
 
   const handleSaveNotes = () => {
     if (!notes.trim()) {
-      toast.error('Please enter notes before saving.');
+      toast.error(t('consultation.enterNotesFirst'));
       return;
     }
     const result = saveScribeNotes({
@@ -160,9 +161,9 @@ export default function LiveConsultation() {
       notes: notes.trim(),
     });
     if (result.success) {
-      toast.success('Scribe notes saved successfully.');
+      toast.success(t('consultation.notesSaved'));
     } else {
-      toast.error('Could not save scribe notes. Please try again.');
+      toast.error(t('consultation.couldNotSaveNotes'));
     }
   };
 
@@ -182,12 +183,12 @@ export default function LiveConsultation() {
     if (result.success) {
       toast.success(
         videoBlob
-          ? 'Consultation recording saved.'
-          : 'Recording saved (demo mode — no video captured).'
+          ? t('consultation.recordingSaved')
+          : t('consultation.recordingSavedDemo')
       );
       setRecordings((prev) => [recording, ...prev]);
     } else {
-      toast.error('Could not save the recording.');
+      toast.error(t('consultation.couldNotSaveRecording'));
     }
   };
 
@@ -199,28 +200,28 @@ export default function LiveConsultation() {
   const handleDeleteRecording = async (id) => {
     const result = await deleteRecording(id);
     if (result.success) {
-      toast.success('Recording deleted.');
+      toast.success(t('consultation.recordingDeleted'));
       setRecordings((prev) => prev.filter((r) => r.id !== id));
     } else {
-      toast.error('Could not delete the recording.');
+      toast.error(t('consultation.couldNotDeleteRecording'));
     }
   };
 
   const handleDownloadSummary = () => {
     downloadConsultationSummaryPDF(summary);
-    toast.success('Consultation summary PDF downloaded.');
+    toast.success(t('history.summaryPdfDownloaded'));
   };
 
   const handleGeneratePrescription = () => {
     storePrescriptionDraft(summary);
-    toast.success('Opening prescription editor with consultation data.');
+    toast.success(t('history.openingPrescriptionEditor'));
     navigate('/doctor/prescription');
   };
 
   return (
     <DashboardLayout
       sidebarProps={SIDEBAR}
-      headerProps={{ title: 'Live Consultation', subtitle: 'AI-powered telemedicine session' }}
+      headerProps={{ title: t('consultation.title'), subtitle: t('consultation.subtitle') }}
     >
       {!patient ? (
         <div className="flex justify-center py-20">
@@ -234,17 +235,17 @@ export default function LiveConsultation() {
             </div>
             <h3 className="font-headline text-headline-md font-bold text-on-surface">{patient.name}</h3>
             <p className="text-on-surface-variant mb-2">{patient.id} · {patient.village}</p>
-            <Badge variant="critical" uppercase>{patient.risk} Risk</Badge>
+            <Badge variant="critical" uppercase>{t('case.riskBadge', { risk: patient.risk })}</Badge>
             <div className="bg-surface-container-low rounded-lg p-4 mt-6 text-left w-full max-w-md">
-              <p className="text-label-md text-on-surface-variant mb-1">Complaint</p>
+              <p className="text-label-md text-on-surface-variant mb-1">{t('consultation.complaint')}</p>
               <p className="text-on-surface font-medium">{patient.complaint}</p>
             </div>
             <div className="mt-8 flex gap-3">
               <Button size="lg" icon="videocam" onClick={startSession}>
-                Start Session
+                {t('consultation.startSession')}
               </Button>
               <Button size="lg" variant="outline" onClick={() => navigate('/doctor/queue')}>
-                Back to Queue
+                {t('consultation.backToQueue')}
               </Button>
             </div>
           </div>
@@ -270,12 +271,12 @@ export default function LiveConsultation() {
             <div className="lg:col-span-2 space-y-6">
               <TranscriptPanel messages={liveTranscript} />
               <Card
-                title="AI Scribe Notes"
+                title={t('consultation.aiScribeNotes')}
                 icon="auto_awesome"
-                subtitle="Structured clinical summary generated from the conversation"
+                subtitle={t('consultation.scribeSubtitle')}
                 headerRight={
                   <Button size="sm" variant="outline" icon="refresh" onClick={regenerateSections}>
-                    Regenerate
+                    {t('consultation.regenerate')}
                   </Button>
                 }
               >
@@ -286,7 +287,7 @@ export default function LiveConsultation() {
                         <span className="material-symbols-outlined text-primary text-base">
                           {section.icon}
                         </span>
-                        {section.title}
+                        {t(`scribe.${section.id}`)}
                       </label>
                       <textarea
                         value={section.content}
@@ -299,10 +300,10 @@ export default function LiveConsultation() {
                 </div>
                 <div className="mt-5 flex flex-wrap items-center gap-3">
                   <Button variant="secondary" icon="save" onClick={handleSaveNotes}>
-                    Save Scribe Notes
+                    {t('consultation.saveScribeNotes')}
                   </Button>
                   <Button variant="outline" icon="assignment_turned_in" onClick={endSession}>
-                    End Consultation & Summarize
+                    {t('consultation.endConsultation')}
                   </Button>
                 </div>
               </Card>
@@ -310,7 +311,7 @@ export default function LiveConsultation() {
 
             <div className="space-y-6">
               <ChatPanel onSend={() => {}} />
-              <Card title="AI Assistants" icon="smart_toy" subtitle="Cloud AI backend (placeholder)">
+              <Card title={t('consultation.aiAssistants')} icon="smart_toy" subtitle={t('consultation.cloudAiBackend')}>
                 <div className="space-y-3">
                   {AI_ASSISTANTS.map((ai) => (
                     <div key={ai.id} className="flex items-start gap-3 rounded-lg bg-surface-container-low p-3">
@@ -319,28 +320,28 @@ export default function LiveConsultation() {
                       </span>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="font-bold text-on-surface text-label-md">{ai.label}</p>
-                          <Badge variant={AI_STATUS_VARIANT[ai.status]}>{ai.statusLabel}</Badge>
+                          <p className="font-bold text-on-surface text-label-md">{t(ai.labelKey)}</p>
+                          <Badge variant={AI_STATUS_VARIANT[ai.status]}>{t(ai.statusKey)}</Badge>
                         </div>
-                        <p className="text-label-md text-on-surface-variant mt-0.5">{ai.note}</p>
+                        <p className="text-label-md text-on-surface-variant mt-0.5">{t(ai.noteKey)}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               </Card>
-              <Card title="Consultation Recording" icon="videocam" subtitle="Audio-video record of this session">
+              <Card title={t('consultation.consultationRecording')} icon="videocam" subtitle={t('consultation.recordingSubtitle')}>
                 <div className="flex items-center gap-2 mb-4">
                   {recordingActive ? (
                     <Badge variant="warning" dot dotColor="bg-error">
-                      Recording in progress{recordingMode === 'real' ? '' : ' (demo)'}
+                      {recordingMode === 'real' ? t('consultation.recordingInProgress') : t('consultation.recordingDemo')}
                     </Badge>
                   ) : (
-                    <Badge variant="neutral">Not recording</Badge>
+                    <Badge variant="neutral">{t('consultation.notRecording')}</Badge>
                   )}
                 </div>
                 {recordings.length === 0 ? (
                   <p className="text-on-surface-variant text-label-md">
-                    No recordings for this session yet. Use the record button on the video call.
+                    {t('consultation.noRecordingsYet')}
                   </p>
                 ) : (
                   <div className="divide-y divide-outline-variant">

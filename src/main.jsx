@@ -10,6 +10,7 @@ import './index.css';
 import './styles/globals.css';
 import './styles/dashboard.css';
 import './styles/auth.css';
+import './i18n';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
