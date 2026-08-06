@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Chart } from 'chart.js/auto';
 import { useTheme } from '../../hooks/useTheme';
 
-export default function LineChart({ labels, data, height = 320, options = {} }) {
+export default function LineChart({ labels, data, datasets, height = 320, options = {} }) {
   const canvasRef = useRef(null);
   const { theme } = useTheme();
   const dark = theme === 'dark';
@@ -11,24 +11,46 @@ export default function LineChart({ labels, data, height = 320, options = {} }) 
     const ctx = canvasRef.current?.getContext('2d');
     if (!ctx) return undefined;
 
+    const primaryColor = dark ? '#93D3C0' : '#1B5E4F';
+    const primaryFill = dark ? 'rgba(147, 211, 192, 0.12)' : 'rgba(27, 94, 79, 0.1)';
+
+    const resolveColor = (value, fallback) => value ?? fallback;
+
+    const chartData = datasets
+      ? {
+          labels,
+          datasets: datasets.map((ds) => ({
+            label: ds.label,
+            data: ds.data,
+            borderColor: ds.borderColor ?? primaryColor,
+            backgroundColor: ds.backgroundColor ?? primaryFill,
+            fill: ds.fill ?? true,
+            tension: ds.tension ?? 0.4,
+            pointBackgroundColor: ds.pointBackgroundColor ?? ds.borderColor ?? primaryColor,
+            pointRadius: ds.pointRadius ?? 4,
+            pointHoverRadius: ds.pointHoverRadius ?? 8,
+          })),
+        }
+      : {
+          labels,
+          datasets: [
+            {
+              label: 'Consultations',
+              data,
+              borderColor: resolveColor(undefined, primaryColor),
+              backgroundColor: resolveColor(undefined, primaryFill),
+              fill: true,
+              tension: 0.4,
+              pointBackgroundColor: primaryColor,
+              pointRadius: 5,
+              pointHoverRadius: 8,
+            },
+          ],
+        };
+
     const chart = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [
-          {
-            label: 'Consultations',
-            data,
-            borderColor: dark ? '#93D3C0' : '#1B5E4F',
-            backgroundColor: dark ? 'rgba(147, 211, 192, 0.12)' : 'rgba(27, 94, 79, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: dark ? '#93D3C0' : '#1B5E4F',
-            pointRadius: 5,
-            pointHoverRadius: 8,
-          },
-        ],
-      },
+      data: chartData,
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -49,7 +71,7 @@ export default function LineChart({ labels, data, height = 320, options = {} }) 
     });
 
     return () => chart.destroy();
-  }, [labels, data, options, dark]);
+  }, [labels, data, datasets, options, dark]);
 
   return (
     <div style={{ height }} className="w-full">

@@ -6,7 +6,7 @@ import { APP_NAME, REGISTRATION_ROLES, ROLE_LABELS, ROLE_META, ROLE_PORTAL } fro
 
 const HOME_LINKS = [
   { labelKey: 'doctorLogin', to: '/login/doctor' },
-  { labelKey: 'patientLogin', to: '/login/patient' },
+  { labelKey: 'patientLogin', to: '/patient/login' },
   { labelKey: 'ngoLogin', to: '/login/ngo' },
   { labelKey: 'governmentLogin', to: '/login/government' },
   { labelKey: 'adminLogin', to: '/admin/login' },

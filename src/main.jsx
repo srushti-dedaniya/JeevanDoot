@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { PatientProvider } from './context/PatientContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { UserProvider } from './context/UserContext';
 import './index.css';
@@ -17,11 +18,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <ThemeProvider>
         <AuthProvider>
-          <UserProvider>
-            <NotificationProvider>
-              <App />
-            </NotificationProvider>
-          </UserProvider>
+          <PatientProvider>
+            <UserProvider>
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
+            </UserProvider>
+          </PatientProvider>
         </AuthProvider>
       </ThemeProvider>
     </BrowserRouter>

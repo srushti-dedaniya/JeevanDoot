@@ -9,6 +9,7 @@ import RoleLogin from './pages/RoleLogin';
 import AdminLogin from './pages/auth/AdminLogin';
 import DoctorLogin from './pages/auth/DoctorLogin';
 import CHWLogin from './pages/auth/CHWLogin';
+import PatientLogin from './pages/auth/PatientLogin';
 import NotFound from './pages/errors/404';
 import Unauthorized from './pages/errors/Unauthorized';
 
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/doctor/login" element={<DoctorLogin />} />
         <Route path="/chw/login" element={<CHWLogin />} />
+        <Route path="/patient/login" element={<PatientLogin />} />
 
         {/* Protected dashboards */}
         <Route
@@ -51,6 +53,14 @@ export default function App() {
           element={
             <ProtectedRoute allowedRoles={['chw']}>
               <AppRoutes role="chw" />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/patient/*"
+          element={
+            <ProtectedRoute allowedRoles={['patient']}>
+              <AppRoutes role="patient" />
             </ProtectedRoute>
           }
         />
