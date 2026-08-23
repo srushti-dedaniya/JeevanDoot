@@ -9,8 +9,16 @@ import { dashboardService } from '../services/dashboard.service.js';
  * Role: doctor
  */
 export const getDashboard = asyncHandler(async (req, res) => {
-  const doctor = await Doctor.findOne({ user: req.user._id }).lean();
-  if (!doctor) throw new ApiError(404, 'Doctor profile not found.');
+  let doctor = await Doctor.findOne({ user: req.user._id }).lean();
+  if (!doctor) {
+    doctor = await Doctor.create({
+      user: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      specialization: 'General Medicine',
+      availability: { status: 'online' },
+    });
+  }
 
   const [dashboard, queue, recent] = await Promise.all([
     dashboardService.buildDoctorDashboard({ doctorId: doctor._id }),
