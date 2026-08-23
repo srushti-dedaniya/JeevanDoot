@@ -2,23 +2,6 @@ import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
 import { toDoctorCard, toDoctorStats } from './adapters';
 
-export const MOCK_DOCTORS = [
-  { id: 'JD-9012', name: 'Dr. Ananya Sharma', specialty: 'General Physician', status: 'Online', patients: 1245, rating: 4.9 },
-  { id: 'JD-8841', name: 'Dr. Rajesh Varma', specialty: 'Pediatrician', status: 'Offline', patients: 982, rating: 4.7 },
-  { id: 'JD-9211', name: 'Dr. Kavita Reddy', specialty: 'Obstetrician', status: 'Online', patients: 856, rating: 4.8 },
-  { id: 'JD-7720', name: 'Dr. Samuel Kutty', specialty: 'Cardiologist', status: 'Online', patients: 2103, rating: 5.0 },
-];
-
-export const MOCK_DOCTOR_STATS = {
-  totalPatients: 1248,
-  patientsToday: 12,
-  urgentCases: 3,
-  avgResponse: '14m',
-  followUps: 5,
-  consultations: [12, 19, 15, 25, 22, 10, 8],
-  outcomes: [640, 210, 398],
-};
-
 const toId = (doctor) => doctor._id || doctor.id;
 
 export const doctorService = {

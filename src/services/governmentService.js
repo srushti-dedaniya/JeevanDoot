@@ -2,16 +2,6 @@ import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
 import { formatDate, titleCase } from './adapters';
 
-const MOCK_SCHEMES = [
-  { id: 'pmjay', name: 'Ayushman Bharat PM-JAY', shortName: 'PM-JAY', department: 'National Health Authority', registrations: 12840, target: 16000, budget: '₹5,00,000', status: 'Active' },
-  { id: 'nhm', name: 'National Health Mission', shortName: 'NHM', department: 'MoHFW', registrations: 8920, target: 12000, budget: '₹4,20,000', status: 'Active' },
-];
-
-const registrationBase = (code) => {
-  const seed = code.split('').reduce((sum, ch) => sum + ch.charCodeAt(0), 0);
-  return 4000 + (seed % 9000);
-};
-
 export const governmentService = {
   async getDashboard() {
     if (isMockMode()) {

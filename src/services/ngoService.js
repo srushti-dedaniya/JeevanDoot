@@ -2,11 +2,6 @@ import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
 import { formatDate, titleCase } from './adapters';
 
-const MOCK_CAMPS = [
-  { id: 'HC-1001', name: 'Amroli Eye Checkup Camp', type: 'Eye Care', location: 'Amroli PHC', date: 'Oct 27', beneficiaries: 0, status: 'Planned' },
-  { id: 'HC-1002', name: 'Devgram Nutrition Camp', type: 'Nutrition', location: 'Devgram Community Hall', date: 'Jul 20', beneficiaries: 214, status: 'Completed' },
-];
-
 const toCampCard = (c) => ({
   id: c.campId || c._id,
   _id: c._id,

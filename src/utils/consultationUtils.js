@@ -17,28 +17,10 @@ const STORAGE_KEY = 'savedConsultations';
 export const PRESCRIPTION_DRAFT_KEY = 'jd_prescription_draft';
 
 /**
- * Mock AI medicine recommendations for the demo patient (inferior wall MI).
- * Replace with the real Medicine Recommendation AI (cloud backend) later;
- * keep the same shape: { id, medicineName, dosage, frequency, duration, schedule }.
+ * AI medicine recommendations - replace with real Medicine Recommendation AI (cloud backend) later.
+ * Keep the same shape: { id, medicineName, dosage, frequency, duration, schedule }.
  */
-export const getMedicineRecommendations = () => [
-  {
-    id: 'rx-ai-1',
-    medicineName: 'Aspirin',
-    dosage: '300mg',
-    frequency: 'Chewable · single dose',
-    duration: '1',
-    schedule: { morning: false, afternoon: false, night: false },
-  },
-  {
-    id: 'rx-ai-2',
-    medicineName: 'Nitroglycerin',
-    dosage: '0.4mg',
-    frequency: 'Sublingual PRN',
-    duration: '1',
-    schedule: { morning: false, afternoon: false, night: false },
-  },
-];
+export const getMedicineRecommendations = () => [];
 
 const readAll = () => {
   try {
@@ -60,7 +42,7 @@ export const generateSummary = ({
   consultationId,
   patient = {},
   doctorId,
-  doctorName = 'Dr. Rajesh Khanna',
+  doctorName = '',
   duration = 0,
   complaint,
   diagnosis = '',
@@ -71,13 +53,13 @@ export const generateSummary = ({
   advice = '',
 } = {}) => ({
   id: `cs-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-  consultationId: consultationId || 'sess-demo',
-  patientId: patient.id || 'JD-9921',
-  patientName: patient.name || 'Unknown Patient',
+  consultationId: consultationId || '',
+  patientId: patient.id || '',
+  patientName: patient.name || '',
   patientAge: patient.age,
   patientGender: patient.gender,
   patientVillage: patient.village,
-  doctorId: doctorId || 'doctor',
+  doctorId: doctorId || '',
   doctorName,
   date: new Date().toISOString(),
   duration,
@@ -138,7 +120,7 @@ export const deleteConsultation = (consultationId) => {
 /** Write a prescription draft to sessionStorage so PrescriptionWriting can prefill. */
 export const storePrescriptionDraft = (summary = {}) => {
   const draft = {
-    patientId: summary.patientId || 'JD-9921',
+    patientId: summary.patientId || '',
     patientName: summary.patientName || '',
     diagnosis: summary.diagnosis || '',
     advice: summary.advice || '',
