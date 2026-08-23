@@ -3,6 +3,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { success, noContent } from '../utils/response.js';
 import { User, ROLES } from '../models/User.js';
 import { Doctor } from '../models/Doctor.js';
+import { Patient } from '../models/Patient.js';
 import { NGO } from '../models/NGO.js';
 import { Government } from '../models/Government.js';
 import { authService } from '../services/auth.service.js';
@@ -26,6 +27,30 @@ const createRoleProfile = async (role, user, body) => {
         experience: body.experience || 0,
         phone: user.phone || '',
         availability: { status: 'online' },
+      });
+    }
+  } else if (role === ROLES.PATIENT) {
+    const existing = await Patient.findOne({ user: user._id });
+    if (!existing) {
+      const patientId = `JD-${Date.now().toString(36).toUpperCase()}`;
+      await Patient.create({
+        user: user._id,
+        patientId,
+        personalInfo: {
+          fullName: user.name,
+          email: user.email,
+          phone: user.phone || '',
+          address: body.address || '',
+          village: body.village || '',
+          dateOfBirth: body.dateOfBirth || null,
+          gender: body.gender || '',
+        },
+        emergencyContact: {
+          name: body.emergencyContactName || '',
+          relationship: body.emergencyContactRelationship || '',
+          phone: body.emergencyContactPhone || '',
+        },
+        queue: { status: 'completed' },
       });
     }
   } else if (role === ROLES.NGO) {
