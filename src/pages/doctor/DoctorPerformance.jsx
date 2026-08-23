@@ -7,6 +7,7 @@ import KPIWidget from '../../components/charts/KPIWidget';
 import LineChart from '../../components/charts/LineChart';
 import BarChart from '../../components/charts/BarChart';
 import HeatMap from '../../components/charts/HeatMap';
+import Button from '../../components/common/Button';
 import { doctorService } from '../../services/doctorService';
 
 const SIDEBAR = {
@@ -29,13 +30,32 @@ export default function DoctorPerformance() {
     { label: t('performance.chronic'), values: [3, 2, 2, 1, 2, 1, 1] },
   ];
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
-      const data = await doctorService.getDashboard();
-      setStats(data);
+      setLoading(true);
+      setError(null);
+      try {
+        const data = await doctorService.getDashboard();
+        if (!cancelled) {
+          setStats(data);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to load performance analytics:', err);
+          setError(err?.message || 'Failed to load performance analytics');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     };
     load();
+    return () => { cancelled = true; };
   }, []);
 
   const achievements = [
@@ -50,14 +70,23 @@ export default function DoctorPerformance() {
       sidebarProps={{ items: sidebarItems }}
       headerProps={{ title: t('performance.title'), subtitle: t('performance.subtitle') }}
     >
-      {!stats ? (
+      {loading ? (
         <div className="flex justify-center py-20">
           <div className="w-10 h-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         </div>
+      ) : error ? (
+        <Card className="max-w-2xl mx-auto text-center py-12">
+          <span className="material-symbols-outlined text-6xl text-error mb-4 block">error</span>
+          <h3 className="font-headline text-title-lg font-bold mb-2">{t('common.error')}</h3>
+          <p className="text-on-surface-variant mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()} icon="refresh">
+            {t('common.refresh')}
+          </Button>
+        </Card>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            <KPIWidget label={t('performance.totalPatients')} value={stats.totalPatients.toLocaleString()} icon="group" color="primary" trend={8} />
+            <KPIWidget label={t('performance.totalPatients')} value={stats?.totalPatients?.toLocaleString() ?? '0'} icon="group" color="primary" trend={8} />
             <KPIWidget label={t('performance.resolutionRate')} value="92%" icon="verified" color="secondary" trend={3} />
             <KPIWidget label={t('performance.avgConsultTime')} value="18m" icon="timer" color="tertiary" trend={-5} />
             <KPIWidget label={t('performance.patientSatisfaction')} value="4.8/5" icon="star" color="error" trend={2} />
@@ -65,7 +94,7 @@ export default function DoctorPerformance() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card title={t('performance.weeklyConsultations')} subtitle={t('performance.trendLastWeek')}>
-              <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats.consultations} height={280} />
+              <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats?.consultations ?? []} height={280} />
             </Card>
             <Card title={t('performance.byType')} subtitle={t('performance.typeDistribution')}>
               <BarChart

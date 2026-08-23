@@ -30,18 +30,35 @@ export default function DoctorDashboard() {
   const [stats, setStats] = useState(null);
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     const load = async () => {
-      const [statsData, patientsData] = await Promise.all([
-        doctorService.getDashboard(),
-        patientService.getAll(),
-      ]);
-      setStats(statsData);
-      setPatients(patientsData);
-      setLoading(false);
+      setLoading(true);
+      setError(null);
+      try {
+        const [statsData, patientsData] = await Promise.all([
+          doctorService.getDashboard(),
+          patientService.getAll(),
+        ]);
+        if (!cancelled) {
+          setStats(statsData);
+          setPatients(patientsData);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Failed to load doctor dashboard:', err);
+          setError(err?.message || 'Failed to load dashboard');
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     };
     load();
+    return () => { cancelled = true; };
   }, []);
 
   const highRisk = patients.filter((p) => p.risk === 'Critical').slice(0, 4);
@@ -64,16 +81,31 @@ export default function DoctorDashboard() {
     );
   }
 
+  if (error) {
+    return (
+      <DashboardLayout sidebarProps={{ items: sidebarItems }} headerProps={{ title: t('nav.dashboard'), subtitle: t('doctor.overview'), right: headerRight }}>
+        <Card className="max-w-2xl mx-auto text-center py-12">
+          <span className="material-symbols-outlined text-6xl text-error mb-4 block">error</span>
+          <h3 className="font-headline text-title-lg font-bold mb-2">{t('common.error')}</h3>
+          <p className="text-on-surface-variant mb-6">{error}</p>
+          <Button onClick={() => window.location.reload()} icon="refresh">
+            {t('common.refresh')}
+          </Button>
+        </Card>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout
       sidebarProps={{ items: sidebarItems }}
       headerProps={{ title: t('doctor.welcomeBack', { name: user?.name ?? t('role.doctor') }), subtitle: t('doctor.overviewToday'), right: headerRight }}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <KPIWidget label={t('doctor.patientsToday')} value={stats.patientsToday} icon="people" color="primary" trend={12} />
-        <KPIWidget label={t('doctor.totalPatients')} value={stats.totalPatients.toLocaleString()} icon="group" color="secondary" trend={5} />
-        <KPIWidget label={t('doctor.urgentCases')} value={stats.urgentCases} icon="warning" color="error" trend={-3} />
-        <KPIWidget label={t('doctor.avgResponseTime')} value={stats.avgResponse} unit="" icon="timer" color="tertiary" trend={8} />
+        <KPIWidget label={t('doctor.patientsToday')} value={stats?.patientsToday ?? 0} icon="people" color="primary" trend={12} />
+        <KPIWidget label={t('doctor.totalPatients')} value={stats?.totalPatients?.toLocaleString() ?? '0'} icon="group" color="secondary" trend={5} />
+        <KPIWidget label={t('doctor.urgentCases')} value={stats?.urgentCases ?? 0} icon="warning" color="error" trend={-3} />
+        <KPIWidget label={t('doctor.avgResponseTime')} value={stats?.avgResponse ?? '0m'} unit="" icon="timer" color="tertiary" trend={8} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -88,13 +120,13 @@ export default function DoctorDashboard() {
             </select>
           }
         >
-          <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats.consultations} height={280} />
+          <LineChart labels={[t('schedule.mon'), t('schedule.tue'), t('schedule.wed'), t('schedule.thu'), t('schedule.fri'), t('schedule.sat'), t('schedule.sun')]} data={stats?.consultations ?? []} height={280} />
         </Card>
 
         <Card title={t('doctor.outcomeDistribution')} subtitle={t('doctor.resolvedVsReferred')}>
           <PieChart
             labels={[t('doctor.resolved'), t('doctor.referred'), t('doctor.followUp')]}
-            data={stats.outcomes}
+            data={stats?.outcomes ?? [0, 0, 0]}
             colors={['#1B5E4F', '#C8B900', '#E8734A']}
             height={220}
           />
@@ -105,7 +137,7 @@ export default function DoctorDashboard() {
                   <span className="w-3 h-3 rounded-full" style={{ background: ['#1B5E4F', '#C8B900', '#E8734A'][i] }} />
                   <span className="text-label-md text-on-surface-variant">{t(`doctor.${key}`)}</span>
                 </div>
-                <span className="font-bold text-on-surface">{stats.outcomes[i]}</span>
+                <span className="font-bold text-on-surface">{stats?.outcomes?.[i] ?? 0}</span>
               </div>
             ))}
           </div>
@@ -156,6 +188,13 @@ export default function DoctorDashboard() {
                   </td>
                 </tr>
               ))}
+              {patients.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-on-surface-variant">
+                    {t('queue.noPatientsFound')}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

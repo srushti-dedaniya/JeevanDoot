@@ -2,6 +2,9 @@ import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { success, noContent } from '../utils/response.js';
 import { User, ROLES } from '../models/User.js';
+import { Doctor } from '../models/Doctor.js';
+import { NGO } from '../models/NGO.js';
+import { Government } from '../models/Government.js';
 import { authService } from '../services/auth.service.js';
 
 const isValidRole = (role) =>
@@ -9,6 +12,50 @@ const isValidRole = (role) =>
 
 const isPublicRole = (role) =>
   [ROLES.DOCTOR, ROLES.PATIENT, ROLES.NGO, ROLES.GOVERNMENT].includes(role);
+
+const createRoleProfile = async (role, user, body) => {
+  if (role === ROLES.DOCTOR) {
+    const existing = await Doctor.findOne({ user: user._id });
+    if (!existing) {
+      await Doctor.create({
+        user: user._id,
+        name: user.name,
+        email: user.email,
+        specialization: body.specialization || 'General Medicine',
+        hospital: body.hospital || '',
+        experience: body.experience || 0,
+        phone: user.phone || '',
+        availability: { status: 'online' },
+      });
+    }
+  } else if (role === ROLES.NGO) {
+    const existing = await NGO.findOne({ user: user._id });
+    if (!existing) {
+      await NGO.create({
+        user: user._id,
+        organization: body.organization || user.name,
+        email: user.email,
+        phone: user.phone || '',
+        workerId: body.workerId || '',
+        designation: body.designation || '',
+        region: body.region || '',
+      });
+    }
+  } else if (role === ROLES.GOVERNMENT) {
+    const existing = await Government.findOne({ user: user._id });
+    if (!existing) {
+      await Government.create({
+        user: user._id,
+        designation: body.designation || 'Health Official',
+        department: body.department || 'Health',
+        district: body.district || '',
+        region: body.region || '',
+        email: user.email,
+        phone: user.phone || '',
+      });
+    }
+  }
+};
 
 /**
  * POST /auth/login
@@ -76,6 +123,8 @@ export const register = asyncHandler(async (req, res) => {
     password,
     phone: phone || '',
   });
+
+  await createRoleProfile(role, user, req.body);
 
   const token = authService.signAccessToken(user);
   const payload = authService.toAuthUser(user);
