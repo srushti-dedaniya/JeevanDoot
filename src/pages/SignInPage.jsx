@@ -1,10 +1,21 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Button from '../components/common/Button';
 import { useTranslation } from 'react-i18next';
+import { useNotification } from '../hooks/useNotification';
 import { APP_NAME, REGISTRATION_ROLES, ROLE_META } from '../utils/constants';
 
 export default function SignInPage() {
   const { t } = useTranslation();
+  const { notify } = useNotification();
+  const location = useLocation();
+
+  const registered = location.state?.registered;
+  const registeredRole = location.state?.role;
+
+  if (registered) {
+    notify({ type: 'success', message: t('auth.accountCreated') });
+  }
+
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface">
       <nav className="sticky top-0 z-40 bg-surface-container-lowest/90 backdrop-blur border-b border-outline-variant/40">
@@ -27,6 +38,12 @@ export default function SignInPage() {
       </nav>
 
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-10 md:py-16">
+        {registered && (
+          <div className="mb-6 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-800">
+            {t('auth.accountCreated')} {registeredRole && t(`role.${registeredRole}`)}
+          </div>
+        )}
+
         <div className="text-center mb-10">
           <h1 className="font-headline text-headline-xl font-bold">{t('auth.signInTo', { app: APP_NAME })}</h1>
           <p className="text-on-surface-variant mt-2">{t('auth.chooseRole')}</p>

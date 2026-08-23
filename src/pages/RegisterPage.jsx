@@ -58,7 +58,7 @@ export default function RegisterPage() {
         role,
       });
       notify({ type: 'success', message: t('auth.accountCreated') });
-      navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
+      navigate('/login', { replace: true, state: { registered: true, role } });
     } catch (err) {
       const message = err?.message || t('auth.registrationFailed');
       setErrors({ form: message });
