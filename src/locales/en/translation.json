@@ -79,6 +79,7 @@
     "medicalRecords": "Medical Records",
     "prescriptions": "Prescriptions",
     "appointments": "Appointments",
+    "bookAppointment": "Book Appointment",
     "reports": "Reports",
     "healthMonitoring": "Health Monitoring",
     "notifications": "Notifications",
@@ -1330,6 +1331,24 @@
       "logOut": "Log Out",
       "logOutDesc": "You will need to sign in again to access your account.",
       "logoutConfirm": "Are you sure you want to log out of your account?"
+    },
+    "bookAppointment": {
+      "title": "Book Appointment",
+      "subtitle": "Choose a doctor and schedule your visit",
+      "searchDoctors": "Search doctors",
+      "searchPlaceholder": "Search by name, specialty, hospital...",
+      "specialty": "Specialty",
+      "allSpecialties": "All specialties",
+      "noDoctorsFound": "No doctors found",
+      "noDoctorsRegistered": "No doctors registered yet",
+      "tryDifferentFilters": "Try different search or filters",
+      "bookNow": "Book Appointment",
+      "bookWith": "Book with {{name}}",
+      "purpose": "Reason for visit",
+      "purposePlaceholder": "e.g. General checkup, Follow-up, Vaccination",
+      "notes": "Additional notes (optional)",
+      "notesPlaceholder": "Any symptoms, concerns, or preferences...",
+      "confirmBooking": "Confirm Booking"
     }
   },
   "schedule": {

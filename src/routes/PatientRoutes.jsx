@@ -3,6 +3,7 @@ import Dashboard from '../pages/patient/Dashboard';
 import MedicalRecords from '../pages/patient/MedicalRecords';
 import Prescriptions from '../pages/patient/Prescriptions';
 import Appointments from '../pages/patient/Appointments';
+import BookAppointment from '../pages/patient/BookAppointment';
 import ConsultationHistory from '../pages/patient/ConsultationHistory';
 import Reports from '../pages/patient/Reports';
 import HealthMonitoring from '../pages/patient/HealthMonitoring';
@@ -18,6 +19,7 @@ export default function PatientRoutes() {
       <Route path="records" element={<MedicalRecords />} />
       <Route path="prescriptions" element={<Prescriptions />} />
       <Route path="appointments" element={<Appointments />} />
+      <Route path="book-appointment" element={<BookAppointment />} />
       <Route path="consultation-history" element={<ConsultationHistory />} />
       <Route path="reports" element={<Reports />} />
       <Route path="monitoring" element={<HealthMonitoring />} />

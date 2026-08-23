@@ -8,6 +8,7 @@ const PATIENT_MENU = [
   { labelKey: 'medicalRecords', to: '/patient/records', icon: 'folder_shared' },
   { labelKey: 'prescriptions', to: '/patient/prescriptions', icon: 'medication' },
   { labelKey: 'appointments', to: '/patient/appointments', icon: 'event' },
+  { labelKey: 'bookAppointment', to: '/patient/book-appointment', icon: 'event_available' },
   { labelKey: 'consultationHistory', to: '/patient/consultation-history', icon: 'history' },
   { labelKey: 'reports', to: '/patient/reports', icon: 'description' },
   { labelKey: 'healthMonitoring', to: '/patient/monitoring', icon: 'monitor_heart' },
