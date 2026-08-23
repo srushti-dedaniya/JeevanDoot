@@ -32,7 +32,7 @@ export default function PatientReferral() {
     Normal: t('referral.normal'),
   };
   const [form, setForm] = useState({
-    patientId: 'JD-9921',
+    patientId: 'JD-5XA2MN',
     patientName: 'Meera Sharma',
     destination: '',
     priority: 'Urgent',
@@ -47,10 +47,15 @@ export default function PatientReferral() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    const result = await referralService.create(form);
-    setSubmitting(false);
-    setSubmitted(result);
-    notify({ type: 'success', message: t('referral.sent', { id: result.id }) });
+    try {
+      const result = await referralService.create(form);
+      setSubmitted(result);
+      notify({ type: 'success', message: t('referral.sent', { id: result.referralId || result.id }) });
+    } catch (err) {
+      notify({ type: 'error', message: err?.message || t('referral.failed') });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -104,7 +109,7 @@ export default function PatientReferral() {
           {submitted ? (
             <Card title={t('referral.referralConfirmed')} icon="verified" className="border-l-4 border-l-success">
               <div className="space-y-3">
-                <Badge variant="success" icon="check">{t('referral.referralId', { id: submitted.id })}</Badge>
+                <Badge variant="success" icon="check">{t('referral.referralId', { id: submitted.referralId || submitted.id })}</Badge>
                 <div className="bg-surface-container-low rounded-lg p-4 space-y-2 text-label-md">
                   <p><span className="text-on-surface-variant">{t('referral.status')}</span> <span className="font-bold text-on-surface">{submitted.status}</span></p>
                   <p><span className="text-on-surface-variant">{t('referral.facility')}</span> <span className="font-bold text-on-surface">{form.destination}</span></p>

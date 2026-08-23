@@ -12,6 +12,7 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -30,9 +31,15 @@ export default function AdminLogin() {
     if (Object.keys(nextErrors).length) return;
 
     setLoading(true);
-    await login(ROLES.ADMIN, email, password);
-    setLoading(false);
-    navigate('/admin/dashboard');
+    setLoginError('');
+    try {
+      await login(ROLES.ADMIN, email, password);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setLoginError(err?.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const illustration = (
@@ -120,6 +127,12 @@ export default function AdminLogin() {
           </a>
         </div>
 
+        {loginError && (
+          <div className="rounded-lg bg-error-container px-4 py-3 text-label-md text-on-error-container">
+            {loginError}
+          </div>
+        )}
+
         <Button type="submit" fullWidth loading={loading} size="lg">
           <span className="material-symbols-outlined">admin_panel_settings</span>
           Secure Sign In
@@ -127,7 +140,7 @@ export default function AdminLogin() {
       </form>
 
       <p className="text-center text-label-md text-on-surface-variant mt-8">
-        Demo: use <span className="font-bold text-primary">admin@jeevandoot.org</span> with any 8+ char password
+        Demo: use <span className="font-bold text-primary">admin@jeevandoot.org</span> with password <span className="font-bold text-primary">Password@123</span>
       </p>
     </AuthLayout>
   );

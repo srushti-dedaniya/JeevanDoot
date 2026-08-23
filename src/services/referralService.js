@@ -1,11 +1,17 @@
 import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
+import { toReferral } from './adapters';
 
 const REFERRAL_DESTINATIONS = [
-  'Amroli General Hospital (Primary Care Facility)',
-  'District Cardiology Center (Specialist Hospital)',
-  'Dr. Rajeev (Orthopedic Specialist)',
+  { value: 'agh', label: 'Amroli General Hospital (Primary Care Facility)' },
+  { value: 'dcc', label: 'District Cardiology Center (Specialist Hospital)' },
+  { value: 'drr', label: 'Dr. Rajeev (Orthopedic Specialist)' },
 ];
+
+const normalizePriority = (priority) => {
+  const map = { Urgent: 'urgent', High: 'high', Normal: 'normal' };
+  return map[priority] || priority?.toLowerCase?.() || 'normal';
+};
 
 export const referralService = {
   async create(payload) {
@@ -18,8 +24,14 @@ export const referralService = {
         createdAt: new Date().toISOString(),
       };
     }
-    const { data } = await api.post('/referrals', payload);
-    return data;
+    const { data } = await api.post('/referrals', {
+      patientId: payload.patientId,
+      destination: payload.destination,
+      priority: normalizePriority(payload.priority),
+      reason: payload.reason,
+      notes: payload.notes,
+    });
+    return toReferral(data);
   },
 
   async getByPatient(patientId) {
@@ -27,8 +39,11 @@ export const referralService = {
       await sleep(400);
       return [];
     }
-    const { data } = await api.get('/referrals', { patientId });
-    return data;
+    const { data } = await api.get('/referrals', { limit: 100 });
+    return (data || []).filter((r) => {
+      const patient = r.patient && typeof r.patient === 'object' ? r.patient : {};
+      return !patientId || patient.patientId === patientId;
+    }).map(toReferral);
   },
 
   async getDestinations() {
@@ -37,7 +52,7 @@ export const referralService = {
       return REFERRAL_DESTINATIONS;
     }
     const { data } = await api.get('/referrals/destinations');
-    return data;
+    return (data || []).map((d) => ({ value: d.code, label: d.label }));
   },
 
   async trackStatus(referralId) {
@@ -46,6 +61,6 @@ export const referralService = {
       return { id: referralId, status: 'Pending Review' };
     }
     const { data } = await api.get(`/referrals/${referralId}/status`);
-    return data;
+    return { id: referralId, status: data.status, referral: data.referral };
   },
 };

@@ -1,5 +1,6 @@
 import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
+import { toNotification } from './adapters';
 
 export const notificationService = {
   async getAll() {
@@ -11,8 +12,8 @@ export const notificationService = {
         { id: 'n3', title: 'Consultation completed', message: 'K. Singh - Virtual Bridge', type: 'success', read: true, time: '1 hour ago' },
       ];
     }
-    const { data } = await api.get('/notifications');
-    return data;
+    const { data } = await api.get('/notifications', { limit: 50 });
+    return (data || []).map(toNotification);
   },
 
   async markAllRead() {
@@ -21,7 +22,16 @@ export const notificationService = {
       return { success: true };
     }
     const { data } = await api.post('/notifications/read-all');
-    return data;
+    return { success: true, modifiedCount: data.modifiedCount };
+  },
+
+  async markRead(id) {
+    if (isMockMode()) {
+      await sleep(150);
+      return { success: true };
+    }
+    await api.post(`/notifications/${id}/read`);
+    return { success: true };
   },
 
   async send(payload) {
@@ -30,6 +40,6 @@ export const notificationService = {
       return { id: `n-${Date.now()}`, ...payload };
     }
     const { data } = await api.post('/notifications', payload);
-    return data;
+    return toNotification(data);
   },
 };

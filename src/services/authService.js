@@ -1,11 +1,6 @@
 import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
 
-const MOCK_USERS = {
-  admin: { id: 'adm-1', name: 'Admin Miller', role: 'admin' },
-  doctor: { id: 'doc-1', name: 'Dr. Sharma', role: 'doctor' },
-};
-
 export const authService = {
   async login(role, credentials) {
     if (isMockMode()) {
@@ -13,16 +8,28 @@ export const authService = {
       if (!credentials.email || !credentials.password) {
         throw new Error('Email and password are required');
       }
-      return { token: `token-${role}`, user: MOCK_USERS[role] };
+      return { token: `token-${role}`, user: { id: `usr-${role}`, role, name: role === 'admin' ? 'Admin Miller' : 'Dr. Sharma', email: credentials.email } };
     }
     const { data } = await api.post('/auth/login', { role, ...credentials });
     return data;
   },
 
+  async register(profile) {
+    if (isMockMode()) {
+      await sleep(1200);
+      return {
+        token: `token-${profile.role}`,
+        user: { id: `usr-${Date.now()}`, role: profile.role, name: profile.name, email: profile.email },
+      };
+    }
+    const { data } = await api.post('/auth/register', profile);
+    return data;
+  },
+
   async logout() {
     if (isMockMode()) return { success: true };
-    const { data } = await api.post('/auth/logout');
-    return data;
+    await api.post('/auth/logout');
+    return { success: true };
   },
 
   async requestAccess(payload) {
@@ -35,7 +42,7 @@ export const authService = {
   },
 
   async verifyToken(token) {
-    if (isMockMode()) return { valid: true, user: MOCK_USERS.doctor };
+    if (isMockMode()) return { valid: true, user: { id: 'usr-doctor', role: 'doctor', name: 'Dr. Sharma' } };
     const { data } = await api.get('/auth/verify', { token });
     return data;
   },

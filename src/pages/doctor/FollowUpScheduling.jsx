@@ -6,6 +6,7 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Badge from '../../components/common/Badge';
 import { useNotification } from '../../hooks/useNotification';
+import { appointmentService } from '../../services/appointmentService';
 
 const SIDEBAR = {
   items: [
@@ -34,8 +35,8 @@ export default function FollowUpScheduling() {
     { value: 'home', labelKey: 'followup.homeVisit', icon: 'home' },
   ];
   const [form, setForm] = useState({
-    patientId: 'JD-7721',
-    patientName: 'Laxmi Verma',
+    patientId: 'JD-5XA2MN',
+    patientName: 'Meera Sharma',
     date: '',
     time: '',
     reason: 'reasonPrenatal',
@@ -43,21 +44,36 @@ export default function FollowUpScheduling() {
     range: DATE_RANGE_OPTIONS[0].value,
   });
   const [scheduled, setScheduled] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const update = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const rangeLabel = (value) => DATE_RANGE_OPTIONS.find((o) => o.value === value)?.label ?? value;
 
-  const handleSchedule = (e) => {
+  const handleSchedule = async (e) => {
     e.preventDefault();
     if (!form.date || !form.time) {
       notify({ type: 'error', message: t('followup.pleasePickDateTime') });
       return;
     }
-    const entry = { ...form, id: `FU-${Date.now()}` };
-    setScheduled((prev) => [...prev, entry]);
-    notify({ type: 'success', message: t('followup.scheduledFor', { name: form.patientName }) });
-    setForm((f) => ({ ...f, date: '', time: '' }));
+    setSubmitting(true);
+    try {
+      const created = await appointmentService.create({
+        patientId: form.patientId,
+        purpose: form.reason,
+        date: form.date,
+        startTime: form.time,
+        notes: `${t('followup.mode')}: ${form.mode}`,
+      });
+      const entry = { ...form, id: created.id || `FU-${Date.now()}` };
+      setScheduled((prev) => [...prev, entry]);
+      notify({ type: 'success', message: t('followup.scheduledFor', { name: form.patientName }) });
+      setForm((f) => ({ ...f, date: '', time: '' }));
+    } catch (err) {
+      notify({ type: 'error', message: err?.message || t('followup.scheduleFailed') });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -106,7 +122,7 @@ export default function FollowUpScheduling() {
                 </div>
               </div>
             </div>
-            <Button type="submit" fullWidth className="mt-6" icon="event_available" size="lg">
+            <Button type="submit" fullWidth className="mt-6" icon="event_available" size="lg" loading={submitting}>
               {t('followup.scheduleFollowUp')}
             </Button>
           </Card>

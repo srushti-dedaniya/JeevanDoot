@@ -40,11 +40,17 @@ export default function RoleLogin() {
     if (Object.keys(next).length) return;
 
     setLoading(true);
-    await login(role, email, password);
-    setLoading(false);
-
-    notify({ type: 'success', message: t('auth.welcomeBack') });
-    navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
+    try {
+      await login(role, email, password);
+      notify({ type: 'success', message: t('auth.welcomeBack') });
+      navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
+    } catch (err) {
+      const message = err?.message || t('auth.loginFailed');
+      setErrors({ form: message });
+      notify({ type: 'error', message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -114,14 +120,16 @@ export default function RoleLogin() {
               }
             />
 
+            {errors.form && (
+              <div className="rounded-lg bg-error-container px-4 py-3 text-label-md text-on-error-container">
+                {errors.form}
+              </div>
+            )}
+
             <Button type="submit" fullWidth size="lg" loading={loading} icon="login">
               {t('auth.signIn')}
             </Button>
           </form>
-
-          <p className="text-center text-label-md text-on-surface-variant">
-            {t('auth.demo')}
-          </p>
 
           <div className="border-t border-outline-variant pt-5 text-center space-y-2 text-label-md">
             <p className="text-on-surface-variant">

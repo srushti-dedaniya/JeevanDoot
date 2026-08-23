@@ -1,5 +1,6 @@
 import { api, isMockMode } from './api';
 import { sleep } from '../utils/helpers';
+import { toDoctorCard, toDoctorStats } from './adapters';
 
 export const MOCK_DOCTORS = [
   { id: 'JD-9012', name: 'Dr. Ananya Sharma', specialty: 'General Physician', status: 'Online', patients: 1245, rating: 4.9 },
@@ -18,6 +19,8 @@ export const MOCK_DOCTOR_STATS = {
   outcomes: [640, 210, 398],
 };
 
+const toId = (doctor) => doctor._id || doctor.id;
+
 export const doctorService = {
   async getDashboard() {
     if (isMockMode()) {
@@ -25,7 +28,7 @@ export const doctorService = {
       return MOCK_DOCTOR_STATS;
     }
     const { data } = await api.get('/doctor/dashboard');
-    return data;
+    return toDoctorStats(data);
   },
 
   async getAll() {
@@ -33,8 +36,8 @@ export const doctorService = {
       await sleep(500);
       return MOCK_DOCTORS;
     }
-    const { data } = await api.get('/doctors');
-    return data;
+    const { data } = await api.get('/doctors', { limit: 100 });
+    return (data || []).map(toDoctorCard);
   },
 
   async getById(id) {
@@ -43,7 +46,12 @@ export const doctorService = {
       return MOCK_DOCTORS.find((d) => d.id === id) ?? null;
     }
     const { data } = await api.get(`/doctors/${id}`);
-    return data;
+    return toDoctorCard(data);
+  },
+
+  async getMe() {
+    const { data } = await api.get('/doctors/me');
+    return toDoctorCard(data);
   },
 
   async create(payload) {
@@ -51,8 +59,23 @@ export const doctorService = {
       await sleep(500);
       return { ...payload, id: `JD-${Math.floor(Math.random() * 9000) + 1000}` };
     }
-    const { data } = await api.post('/doctors', payload);
-    return data;
+    const { data: registered } = await api.post('/auth/register', {
+      role: 'doctor',
+      name: payload.name,
+      email: payload.email,
+      password: payload.password || 'Password@123',
+      phone: payload.phone || '',
+    });
+    const { data } = await api.post('/doctors', {
+      user: registered.user.id,
+      name: payload.name,
+      specialization: payload.specialty,
+      hospital: payload.hospital || '',
+      experience: payload.experience,
+      email: payload.email,
+      phone: payload.phone,
+    });
+    return toDoctorCard(data);
   },
 
   async update(id, patch) {
@@ -61,7 +84,7 @@ export const doctorService = {
       return { id, ...patch };
     }
     const { data } = await api.put(`/doctors/${id}`, patch);
-    return data;
+    return toDoctorCard(data);
   },
 
   async toggleStatus(id) {
@@ -73,3 +96,5 @@ export const doctorService = {
     return data;
   },
 };
+
+export const toDoctorId = toId;

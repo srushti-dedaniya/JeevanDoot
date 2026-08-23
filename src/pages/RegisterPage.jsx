@@ -49,16 +49,23 @@ export default function RegisterPage() {
     if (Object.keys(next).length) return;
 
     setLoading(true);
-    await register({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      role,
-    });
-    setLoading(false);
-
-    notify({ type: 'success', message: t('auth.accountCreated') });
-    navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
+    try {
+      await register({
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim(),
+        password: form.password,
+        role,
+      });
+      notify({ type: 'success', message: t('auth.accountCreated') });
+      navigate(ROLE_PORTAL[role] ?? '/', { replace: true });
+    } catch (err) {
+      const message = err?.message || t('auth.registrationFailed');
+      setErrors({ form: message });
+      notify({ type: 'error', message });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

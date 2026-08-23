@@ -37,6 +37,7 @@ import {
 
 const ACTIVE_SESSION_KEY = 'jd_active_session_id';
 const FALLBACK_CONSULTATION_ID = 'sess-demo';
+const DEMO_PATIENT_ID = 'JD-5XA2MN';
 
 const AI_ASSISTANTS = [
   { id: 'medicine', labelKey: 'consultation.medicineAi', icon: 'medication', status: 'ready', statusKey: 'consultation.statusActive', noteKey: 'consultation.aiMedicineNote' },
@@ -87,13 +88,15 @@ export default function LiveConsultation() {
 
   useEffect(() => {
     const init = async () => {
-      const [p, t] = await Promise.all([
-        patientService.getById('JD-9921'),
-        consultationService.getTranscript('sess-demo'),
-      ]);
-      setPatient(p);
       const consultationId =
         sessionStorage.getItem(ACTIVE_SESSION_KEY) || FALLBACK_CONSULTATION_ID;
+      const [p, t] = await Promise.all([
+        patientService.getById(DEMO_PATIENT_ID),
+        consultationService
+          .getTranscript(consultationId)
+          .catch(() => ({ scribe: '', scribeSections: [] })),
+      ]);
+      setPatient(p);
       const initialNotes = loadScribeNotes(consultationId) || t.scribe;
       setNotes(initialNotes);
       setSections(createScribeSections(initialNotes));
@@ -115,10 +118,21 @@ export default function LiveConsultation() {
 
   const endSession = async () => {
     const consultationId = getConsultationId();
-    if (session) await consultationService.endSession(session.sessionId, notes);
+    const diagnosis = sections.find((s) => s.id === 'assessment')?.content || '';
+    const payload = {
+      notes,
+      transcript: notes,
+      diagnosis,
+      medicines: getMedicineRecommendations(),
+      scribeSections: sections,
+    };
+    try {
+      if (session) await consultationService.endSession(session.sessionId, payload);
+    } catch (err) {
+      notify({ type: 'error', message: err?.message || t('consultation.endFailed') });
+    }
 
     const duration = Math.floor((Date.now() - sessionStartRef.current) / 1000);
-    const diagnosis = sections.find((s) => s.id === 'assessment')?.content || '';
     const summaryData = generateSummary({
       consultationId,
       patient,
@@ -127,7 +141,7 @@ export default function LiveConsultation() {
       duration,
       diagnosis,
       vitals: patient.vitals || {},
-      medicines: getMedicineRecommendations(),
+      medicines: payload.medicines,
       scribeSections: sections,
       notes,
     });

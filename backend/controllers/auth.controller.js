@@ -25,8 +25,11 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({ email: email.toLowerCase(), role }).select('+password');
-  if (!user || !(await user.comparePassword(password))) {
-    throw new ApiError(401, 'Invalid email or password.');
+  if (!user) {
+    throw new ApiError(404, 'No account found with this email. Please register first.');
+  }
+  if (!(await user.comparePassword(password))) {
+    throw new ApiError(401, 'Invalid password.');
   }
   if (!user.isActive) {
     throw new ApiError(403, 'This account has been deactivated. Contact support.');

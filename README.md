@@ -11,6 +11,56 @@ The frontend runs in **mock mode** by default (no backend required to explore th
 
 ---
 
+## How to Run
+
+### Option A — Frontend only (mock data, no backend required)
+
+```bash
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173** and sign in with any demo account (e.g. `admin@jeevandoot.org` — any password works in mock mode).
+
+### Option B — Full stack (frontend + API + MongoDB)
+
+**1. Start MongoDB** (Windows service):
+
+```powershell
+net start MongoDB
+```
+
+**2. Start the backend** (in a terminal from the `backend/` folder):
+
+```bash
+cd backend
+npm install
+npm run seed      # seed demo data into MongoDB
+npm run dev       # API on http://localhost:5000/api/v1
+```
+
+**3. Start the frontend** (in a second terminal from the project root):
+
+```bash
+npm run dev
+```
+
+**4. Log in** at http://localhost:5173 with a seeded account — all passwords are `Password@123`:
+
+| Role       | Email                    |
+| ---------- | ------------------------ |
+| Admin      | `admin@jeevandoot.org`   |
+| Doctor     | `doctor@jeevandoot.org`  |
+| Patient    | `patient@jeevandoot.org` |
+| NGO        | `ngo@jeevandoot.org`     |
+| Government | `govt@jeevandoot.org`    |
+
+> **Note:** the frontend is not wired to the API yet — it serves mock data even when the backend is running. To enable real API calls, see [Environment Configuration](#environment-configuration).
+
+Detailed instructions for each part are below.
+
+---
+
 ## Prerequisites
 
 - **Node.js** `^18 || ^20 || ^22` (developed with v26)

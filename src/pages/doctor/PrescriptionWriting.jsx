@@ -14,6 +14,7 @@ import {
   printPrescription,
 } from '../../utils/prescriptionUtils';
 import { consumePrescriptionDraft } from '../../utils/consultationUtils';
+import { prescriptionService } from '../../services/prescriptionService';
 
 const SIDEBAR = {
   items: [
@@ -43,7 +44,7 @@ const nextMedicineId = () => `med-${Date.now()}-${Math.random().toString(36).sli
 export default function PrescriptionWriting() {
   const { t } = useTranslation();
   const sidebarItems = SIDEBAR.items.map((item) => ({ ...item, label: t(`nav.${item.labelKey}`) }));
-  const [patientId, setPatientId] = useState('JD-9921');
+  const [patientId, setPatientId] = useState('JD-5XA2MN');
   const [patientName, setPatientName] = useState('Meera Sharma');
   const [medicines, setMedicines] = useState([]);
   const [current, setCurrent] = useState(EMPTY_MEDICINE);
@@ -146,14 +147,24 @@ export default function PrescriptionWriting() {
     toast.success(t('prescription.pdfDownloaded'));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const result = savePrescription(buildData());
-    if (result.success) {
-      toast.success(t('prescription.savedSuccess'));
-    } else if (result.missingFields) {
-      toast.error(t('prescription.cannotSaveMissing', { fields: result.missingFields.join(', ') }));
-    } else {
-      toast.error(result.error || t('prescription.couldNotSave'));
+    if (!result.success) {
+      if (result.missingFields) {
+        toast.error(t('prescription.cannotSaveMissing', { fields: result.missingFields.join(', ') }));
+      } else {
+        toast.error(result.error || t('prescription.couldNotSave'));
+      }
+      return;
+    }
+    toast.success(t('prescription.savedSuccess'));
+    try {
+      const saved = await prescriptionService.create(buildData());
+      if (saved?.prescriptionId) {
+        toast.success(t('prescription.syncedBackend', { id: saved.prescriptionId }));
+      }
+    } catch (err) {
+      toast.error(t('prescription.syncFailed'));
     }
   };
 

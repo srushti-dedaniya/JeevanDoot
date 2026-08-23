@@ -16,6 +16,7 @@ import {
   deleteConsultation,
   storePrescriptionDraft,
 } from '../../utils/consultationUtils';
+import { consultationService } from '../../services/consultationService';
 import { downloadConsultationSummaryPDF } from '../../utils/pdfUtils';
 import { getAllRecordings, deleteRecording } from '../../utils/recordingUtils';
 import { formatDateTime, formatDuration } from '../../utils/formatDate';
@@ -39,7 +40,28 @@ export default function ConsultationHistory() {
   const [selected, setSelected] = useState(null);
   const [selectedRecordings, setSelectedRecordings] = useState([]);
 
-  const loadConsultations = () => setConsultations(getAllConsultations());
+  const loadConsultations = async () => {
+    let local = [];
+    try {
+      local = getAllConsultations();
+    } catch (err) {
+      local = [];
+    }
+    let remote = [];
+    try {
+      remote = await consultationService.getAll();
+    } catch (err) {
+      remote = [];
+    }
+    const seen = new Set();
+    const merged = [...remote, ...local].filter((c) => {
+      if (seen.has(c.consultationId)) return false;
+      seen.add(c.consultationId);
+      return true;
+    });
+    merged.sort((a, b) => new Date(b.date) - new Date(a.date));
+    setConsultations(merged);
+  };
 
   useEffect(() => {
     loadConsultations();
@@ -72,9 +94,17 @@ export default function ConsultationHistory() {
     navigate('/doctor/prescription');
   };
 
-  const handleDelete = (consultation) => {
+  const handleDelete = async (consultation) => {
     const confirmed = window.confirm(t('history.deleteConfirm', { id: consultation.consultationId }));
     if (!confirmed) return;
+    if (consultation.id) {
+      try {
+        await consultationService.remove(consultation.id);
+      } catch (err) {
+        toast.error(err?.message || t('history.couldNotDelete'));
+        return;
+      }
+    }
     const result = deleteConsultation(consultation.consultationId);
     if (result.success) {
       toast.success(t('history.deleted'));
