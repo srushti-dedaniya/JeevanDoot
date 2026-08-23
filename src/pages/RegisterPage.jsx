@@ -210,6 +210,12 @@ export default function RegisterPage() {
             </div>
           </fieldset>
 
+          {errors.form && (
+            <div className="rounded-lg bg-error-container px-4 py-3 text-label-md text-on-error-container mb-4" role="alert">
+              {errors.form}
+            </div>
+          )}
+
           <div className="pt-2">
             <Button type="submit" fullWidth size="lg" loading={loading} icon="person_add">
               {t('auth.createAccount')}
